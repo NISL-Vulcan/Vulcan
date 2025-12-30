@@ -26,16 +26,16 @@ Getting started with vulcan Detection is simple and straightforward. Follow the 
 Type the following commands in your Shell
 ```
 conda create -n vulcan && conda activate vulcan
-git clone https://github.com/Asteriska001/vulcan-Detection
-cd vulcan-Detection && chmod +x ./install.sh
+git clone https://github.com/NISL-Vulcan/Vulcan.git
+cd Vulcan && chmod +x ./install.sh
 ./install.sh
 ```
 
 #### Direct Installation
 Type the following commands in your Shell
 ```
-git clone https://github.com/Asteriska001/vulcan-Detection
-cd vulcan-Detection && chmod +x ./install.sh
+git clone https://github.com/NISL-Vulcan/Vulcan.git
+cd Vulcan && chmod +x ./install.sh
 ./install.sh
 ```
 #### Docker Implementation
