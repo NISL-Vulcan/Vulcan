@@ -9,9 +9,9 @@ from torch.backends import cudnn
 from torch import nn, Tensor
 from torch.autograd import profiler
 from typing import Union
-from torch import distributed as dist
 from tabulate import tabulate
 from vulcan.framework import models
+from .ddp import setup_ddp, cleanup_ddp, reduce_tensor
 
 
 def fix_seeds(seed: int = 3407) -> None:
@@ -49,27 +49,6 @@ def test_model_latency(model: nn.Module, inputs: torch.Tensor, use_cuda: bool = 
 def count_parameters(model: nn.Module) -> float:
     return sum(p.numel() for p in model.parameters() if p.requires_grad) / 1e6      # in M
 
-def setup_ddp() -> int:
-    if 'RANK' in os.environ and 'WORLD_SIZE' in os.environ:
-        rank = int(os.environ['RANK'])
-        world_size = int(os.environ['WORLD_SIZE'])
-        gpu = int(os.environ(['LOCAL_RANK']))
-        torch.cuda.set_device(gpu)
-        dist.init_process_group('nccl', init_method="env://",world_size=world_size, rank=rank)
-        dist.barrier()
-    else:
-        gpu = 0
-    return gpu
-
-def cleanup_ddp():
-    if dist.is_initialized():
-        dist.destroy_process_group()
-
-def reduce_tensor(tensor: Tensor) -> Tensor:
-    rt = tensor.clone()
-    dist.all_reduce(rt, op=dist.ReduceOp.SUM)
-    rt /= dist.get_world_size()
-    return rt
 '''
 @torch.no_grad()
 

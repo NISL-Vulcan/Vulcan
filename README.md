@@ -50,20 +50,32 @@ You can conveniently utilize it through **Jupyter Notebook** or opt for a **comm
 
 We've already included several notebook files in the 'notebooks' directory for your reference. 
 You're welcome to delve deeper into them.
+
 #### Jupyter Notebook
 Navigate to the 'notebooks' directory and use Jupyter in the way you're accustomed to.
 
-#### Command-Line:
+#### Command-Line（基于 src/vulcan 布局）
 We take the ReGVD method paired with the REVEAL dataset as an example.
-```
+
+```bash
+# Recommended installation (using pyproject.toml)
+pip install -e .
+
 # Training
 python tools/train.py --cfg configs/regvd_reveal.yaml
 
 # Validation
 python tools/val.py --cfg configs/regvd_reveal.yaml
 ```
-And we have already provided some usable examples in the 'config' directory.
-You can further inspect/check it.
+
+You can also use the installed console scripts:
+
+```bash
+vulcan-train --cfg configs/regvd_reveal.yaml
+vulcan-val --cfg configs/regvd_reveal.yaml
+```
+
+For more details about environment setup and usage, see `docs/usage.md`.
 ### Model Zoo
 Supported Models/Modules:
 - [Devign](https://github.com/epicosy/devign)
