@@ -23,9 +23,6 @@ import re
 from typing import Dict, Any, List, Optional
 import requests
 
-# 添加framework路径以便导入模块
-sys.path.append(os.path.join(os.path.dirname(__file__), 'framework'))
-
 # 导入配置模板系统
 from vulcan.framework.config_templates import ConfigTemplateManager
 

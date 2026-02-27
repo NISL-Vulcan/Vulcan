@@ -23,7 +23,7 @@ from vulcan.framework.losses import get_loss
 from vulcan.framework.schedulers import get_scheduler
 from vulcan.framework.optimizers import get_optimizer
 from vulcan.framework.utils.utils import fix_seeds, setup_cudnn, cleanup_ddp, setup_ddp
-from tools.val import evaluate  # 仍复用现有 val 脚本的 evaluate 函数
+from vulcan.cli.val import evaluate
 
 from collections import OrderedDict
 
