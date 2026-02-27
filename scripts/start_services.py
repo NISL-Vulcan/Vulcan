@@ -11,8 +11,10 @@ import time
 import threading
 from pathlib import Path
 
+from vulcan.services.backend_server import run_backend
+
 def start_backend_server():
-    """启动主后端服务"""
+    """启动主后端服务（通过 vulcan.services.backend_server 封装）。"""
     print("🚀 启动主后端服务 (端口 5000)...")
     print("📋 包含功能:")
     print("  • 配置生成")
@@ -20,7 +22,7 @@ def start_backend_server():
     print("  • 模型验证")
     print("  • 数据集优化")
     try:
-        subprocess.run([sys.executable, "backend_server.py"], check=True)
+        run_backend()
     except KeyboardInterrupt:
         print("\n🛑 主后端服务已停止")
     except Exception as e:

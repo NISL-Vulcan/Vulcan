@@ -9,6 +9,8 @@ import sys
 import subprocess
 from pathlib import Path
 
+from vulcan.services.backend_server import run_backend
+
 def check_dependencies():
     """检查依赖是否安装"""
     try:
@@ -44,7 +46,7 @@ def check_vulcan_environment():
     return True
 
 def start_backend():
-    """启动后端服务器"""
+    """启动后端服务器（通过 vulcan.services.backend_server 封装）。"""
     print("🚀 启动vulcan-Detection后端服务器...")
     
     # 检查依赖
@@ -59,9 +61,9 @@ def start_backend():
     Path("generated_configs").mkdir(exist_ok=True)
     Path("output").mkdir(exist_ok=True)
     
-    # 启动服务器
+    # 启动服务器（实际逻辑在 vulcan.services.backend_server 中）
     try:
-        subprocess.run([sys.executable, "backend_server.py"], check=True)
+        run_backend()
     except KeyboardInterrupt:
         print("\n👋 服务器已停止")
     except Exception as e:
