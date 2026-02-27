@@ -6,8 +6,12 @@
 
 ```bash
 cd /home/aejl3/NISL-Vulcan/NISL-Vulcan-2.0/Vulcan
-pip install -r requirements_backend.txt
-export PYTHONPATH=src:$PYTHONPATH
+
+# 推荐：按 pyproject.toml 安装（src/ 布局的标准用法）
+python -m pip install -e .
+
+# 可选：开发/测试依赖
+python -m pip install -e ".[dev]"
 ```
 
 ### 2. 训练与验证

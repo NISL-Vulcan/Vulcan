@@ -3,8 +3,9 @@ import os
 import pytest
 import networkx as nx
 
-from vulcan.framework.representations.extractors.extractors import Visitor
-from vulcan.framework.representations.extractors.extractors import llvm
+extractors = pytest.importorskip("vulcan.framework.representations.extractors.extractors")
+Visitor = extractors.Visitor
+llvm = extractors.llvm
 from vulcan.framework.representations.llvm_graphs import LLVMGraphBuilder
 from vulcan.framework.representations.llvm_graphs import LLVMCDFGVisitor
 from vulcan.framework.representations.llvm_graphs import LLVMCDFGCallVisitor

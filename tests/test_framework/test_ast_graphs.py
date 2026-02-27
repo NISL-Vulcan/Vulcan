@@ -3,8 +3,9 @@ import os
 import networkx as nx
 import pytest
 
-from vulcan.framework.representations.extractors.extractors import Visitor
-from vulcan.framework.representations.extractors.extractors import clang
+extractors = pytest.importorskip("vulcan.framework.representations.extractors.extractors")
+Visitor = extractors.Visitor
+clang = extractors.clang
 from vulcan.framework.representations.ast_graphs import ASTGraphBuilder
 from vulcan.framework.representations.ast_graphs import ASTVisitor
 from vulcan.framework.representations.ast_graphs import ASTDataVisitor

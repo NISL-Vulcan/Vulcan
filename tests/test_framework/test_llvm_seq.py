@@ -1,7 +1,10 @@
 import os
 
-from vulcan.framework.representations.extractors.extractors import Visitor
-from vulcan.framework.representations.extractors.extractors import llvm
+import pytest
+
+extractors = pytest.importorskip("vulcan.framework.representations.extractors.extractors")
+Visitor = extractors.Visitor
+llvm = extractors.llvm
 from vulcan.framework.representations.llvm_seq import LLVMSeqBuilder
 from vulcan.framework.representations.llvm_seq import LLVMSeqVisitor
 

@@ -6,8 +6,14 @@ import subprocess
 import warnings
 from typing import Optional
 
-from .extractors import ClangDriver, LLVM_VERSION
-del extractors # HACK: don't override extractors
+try:
+    from .extractors import ClangDriver, LLVM_VERSION  # type: ignore
+except ModuleNotFoundError:  # pragma: no cover
+    ClangDriver = None  # type: ignore[assignment]
+    LLVM_VERSION = "unknown"
+    _EXTENSION_AVAILABLE = False
+else:
+    _EXTENSION_AVAILABLE = True
 
 
 @functools.lru_cache()
@@ -17,6 +23,12 @@ def clang_binary_path():
     Prints a warning if the binary that was found is a different version.
     Raises RuntimeException if no clang compiler is found at all.
     """
+    if not _EXTENSION_AVAILABLE:
+        raise ModuleNotFoundError(
+            "native extension 'vulcan.framework.representations.extractors.extractors' is not available; "
+            "build/install it to enable clang/LLVM extractors."
+        )
+
     best_score = None
     best_version = None
     best_path = None

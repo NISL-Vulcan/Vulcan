@@ -1,7 +1,10 @@
 import collections
 
 import networkx as nx
-import pygraphviz as pgv
+try:
+    import pygraphviz as pgv
+except ImportError:  # pragma: no cover
+    pgv = None
 
 
 class RepresentationBuilder(object):
@@ -39,6 +42,11 @@ class Sequence(object):
         return len(self.S)
 
     def draw(self, width=8, limit=30, path=None):
+        if pgv is None:
+            raise ModuleNotFoundError(
+                "pygraphviz is required for Sequence.draw(); install it (and graphviz system deps) to enable drawing."
+            )
+
         # Create dot graph.
         graphviz_graph = pgv.AGraph(
             directed=True,

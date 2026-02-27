@@ -38,8 +38,8 @@ def main():
     print("=" * 60)
     
     # 检查文件是否存在
-    if not os.path.exists("backend_server.py"):
-        print("❌ backend_server.py 不存在")
+    if not os.path.exists(os.path.join("scripts", "backend_server.py")):
+        print("❌ scripts/backend_server.py 不存在")
         return
     
     if not os.path.exists("auto_update_and_dynamic_ratio.py"):

@@ -1,24 +1,24 @@
 from tabulate import tabulate
-from framework import models
-from framework import datasets
-from framework import losses
-#from framework.models import backbones, heads
-
-#from framework import representations
+ 
 
 
 def show_models():
+    from . import models
+
     model_names = models.__all__
     numbers = list(range(1, len(model_names)+1))
     print(tabulate({'No.': numbers, 'Model Names': model_names}, headers='keys'))
 
 def show_representations():
-    print(type(representations))
+    from . import representations
+
     representation_names = representations.__all__
     numbers = list(range(1, len(representation_names)+1))
     print(tabulate({'No.': numbers, 'Representation Names': representation_names}, headers='keys'))
 
 def show_losses():
+    from . import losses
+
     loss_names = losses.__all__
     numbers = list(range(1, len(loss_names)+1))
     print(tabulate({'No.': numbers, 'Loss Names': loss_names}, headers='keys'))
@@ -36,6 +36,8 @@ def show_backbones():
 '''
 
 def show_datasets():
+    from . import datasets
+
     dataset_names = datasets.__all__
     numbers = list(range(1, len(dataset_names)+1))
     print(tabulate({'No.': numbers, 'Datasets': dataset_names}, headers='keys'))

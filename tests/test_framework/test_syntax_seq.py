@@ -1,7 +1,10 @@
 import os
 
-from vulcan.framework.representations.extractors.extractors import Visitor
-from vulcan.framework.representations.extractors.extractors import clang
+import pytest
+
+extractors = pytest.importorskip("vulcan.framework.representations.extractors.extractors")
+Visitor = extractors.Visitor
+clang = extractors.clang
 from vulcan.framework.representations.syntax_seq import SyntaxSeqBuilder
 from vulcan.framework.representations.syntax_seq import SyntaxSeqVisitor
 from vulcan.framework.representations.syntax_seq import SyntaxTokenkindVisitor

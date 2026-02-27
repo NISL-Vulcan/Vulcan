@@ -1,38 +1,5 @@
-from .common import RepresentationBuilder, Sequence, Graph
-from .extractors import *
-from .ast_graphs import ASTVisitor, ASTDataVisitor, ASTDataCFGVisitor, ASTGraphBuilder
-from .llvm_graphs import (
-    LLVMCDFGVisitor,
-    LLVMCDFGCallVisitor,
-    LLVMCDFGPlusVisitor,
-    LLVMProGraMLVisitor,
-    LLVMGraphBuilder,
-)
-from .syntax_seq import (
-    SyntaxSeqVisitor,
-    SyntaxTokenkindVisitor,
-    SyntaxTokenkindVariableVisitor,
-    SyntaxSeqBuilder,
-)
-from .llvm_seq import LLVMSeqVisitor, LLVMSeqBuilder
+from .common import Graph, RepresentationBuilder, Sequence
 
-#todo fix this.
-__all__ = [
-    'RepresentationBuilder',
-    'Sequence',
-    'Graph',
-    'ASTVisitor',
-    'ASTDataVisitor',
-    'ASTDataCFGVisitor',
-    'LLVMCDFGVisitor',
-    'LLVMCDFGCallVisitor',
-    'LLVMCDFGPlusVisitor',
-    'LLVMProGraMLVisitor',
-    'LLVMGraphBuilder',
-    'SyntaxSeqVisitor',
-    'SyntaxTokenkindVisitor',
-    'SyntaxTokenkindVariableVisitor',
-    'SyntaxSeqBuilder',
-    'LLVMSeqVisitor',
-    'LLVMSeqBuilder'
-]
+# 保持 __init__ 轻量：避免在导入 representations 时触发可选的本地扩展/重依赖。
+# 需要 AST/LLVM/Syntax 等构建器时，请显式导入对应子模块。
+__all__ = ["RepresentationBuilder", "Sequence", "Graph"]

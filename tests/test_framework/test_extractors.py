@@ -1,11 +1,12 @@
 import pytest
 
-from vulcan.framework.representations.extractors.extractors import Visitor
-from vulcan.framework.representations.extractors.extractors import ClangDriver
-from vulcan.framework.representations.extractors.extractors import ClangExtractor
-from vulcan.framework.representations.extractors.extractors import LLVMIRExtractor
-from vulcan.framework.representations.extractors.extractors import clang
-from vulcan.framework.representations.extractors.extractors import llvm
+extractors = pytest.importorskip("vulcan.framework.representations.extractors.extractors")
+Visitor = extractors.Visitor
+ClangDriver = extractors.ClangDriver
+ClangExtractor = extractors.ClangExtractor
+LLVMIRExtractor = extractors.LLVMIRExtractor
+clang = extractors.clang
+llvm = extractors.llvm
 
 
 program_1fn_1 = """
