@@ -169,3 +169,7 @@ def cli_main():
     main(cfg, gpu, save_dir)
     cleanup_ddp()
 
+
+if __name__ == "__main__":
+    cli_main()
+

@@ -71,3 +71,7 @@ def cli_main():
     
     main(cfg)
 
+
+if __name__ == "__main__":
+    cli_main()
+

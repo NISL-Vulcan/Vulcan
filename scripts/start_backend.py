@@ -28,21 +28,19 @@ def check_dependencies():
 
 def check_vulcan_environment():
     """检查vulcan环境"""
-    # 检查主要目录
-    required_dirs = ['configs', 'framework', 'tools']
-    for dir_name in required_dirs:
-        if not Path(dir_name).exists():
-            print(f"❌ 缺少目录: {dir_name}")
-            return False
-    
-    # 检查主要文件
-    required_files = ['tools/train.py']
-    for file_name in required_files:
-        if not Path(file_name).exists():
-            print(f"❌ 缺少文件: {file_name}")
-            return False
-    
-    print("✅ vulcan环境检查通过")
+    # 对 src/ 布局而言，关键是“包可导入”与配置目录存在，而不是依赖 tools/ 目录。
+    if not Path("configs").exists():
+        print("❌ 缺少目录: configs")
+        return False
+
+    try:
+        import vulcan  # noqa: F401
+    except Exception as e:
+        print(f"❌ 无法导入 vulcan 包: {e}")
+        print("请在项目根目录运行: python -m pip install -e .")
+        return False
+
+    print("✅ vulcan环境检查通过（src/ 安装态）")
     return True
 
 def start_backend():

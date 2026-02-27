@@ -4,12 +4,7 @@
 启动脚本 - 运行主后端服务（包含数据集优化功能）
 """
 
-import subprocess
-import sys
 import os
-import time
-import threading
-from pathlib import Path
 
 from vulcan.services.backend_server import run_backend
 
@@ -37,16 +32,19 @@ def main():
     print("  • 前端应用 (端口 5173) - 需要手动启动")
     print("=" * 60)
     
-    # 检查文件是否存在
-    if not os.path.exists(os.path.join("scripts", "backend_server.py")):
-        print("❌ scripts/backend_server.py 不存在")
+    # 对 src/ 布局而言，核心是包可导入与必要目录存在，而不是检查 scripts/ 薄封装脚本。
+    if not os.path.exists("configs"):
+        print("❌ configs 目录不存在")
+        return
+
+    try:
+        import vulcan  # noqa: F401
+    except Exception as e:
+        print(f"❌ 无法导入 vulcan 包: {e}")
+        print("请在项目根目录运行: python -m pip install -e .")
         return
     
-    if not os.path.exists("auto_update_and_dynamic_ratio.py"):
-        print("❌ auto_update_and_dynamic_ratio.py 不存在")
-        return
-    
-    print("✅ 所有必需文件已找到")
+    print("✅ 环境检查通过（src/ 安装态）")
     
     try:
         # 启动主后端服务

@@ -62,13 +62,14 @@ We take the ReGVD method paired with the REVEAL dataset as an example.
 pip install -e .
 
 # Training
-python tools/train.py --cfg configs/regvd_reveal.yaml
+vulcan-train --cfg configs/regvd_reveal.yaml
 
 # Validation
-python tools/val.py --cfg configs/regvd_reveal.yaml
+vulcan-val --cfg configs/regvd_reveal.yaml
 ```
 
-You can also use the installed console scripts:
+Legacy (not recommended): the old wrapper scripts under `tools/` are kept for compatibility, but the console scripts
+above are the preferred entrypoints for the `src/` layout.
 
 ```bash
 vulcan-train --cfg configs/regvd_reveal.yaml

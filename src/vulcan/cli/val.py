@@ -96,3 +96,7 @@ def cli_main():
     setup_cudnn()
     main(cfg)
 
+
+if __name__ == "__main__":
+    cli_main()
+

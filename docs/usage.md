@@ -18,13 +18,13 @@ python -m pip install -e ".[dev]"
 
 ```bash
 # 训练
-python tools/train.py --cfg configs/custom.yaml
+vulcan-train --cfg configs/custom.yaml
 
 # 验证
-python tools/val.py --cfg configs/custom.yaml
+vulcan-val --cfg configs/custom.yaml
 
 # benchmark
-python tools/benchmark.py --cfg configs/custom.yaml
+vulcan-benchmark --cfg configs/custom.yaml
 ```
 
 对应的 Python 入口位于：

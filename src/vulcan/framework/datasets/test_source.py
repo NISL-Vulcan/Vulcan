@@ -6,7 +6,7 @@ from typing import Tuple
 import numpy as np
 import json
 
-from framework.dataset import get_dataset
+from vulcan.framework.dataset import get_dataset
 
 class InputFeatures(object):
     """A single training/test features for a example."""
