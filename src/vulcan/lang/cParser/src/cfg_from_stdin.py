@@ -1,5 +1,7 @@
 import sys
-sys.path.append('/Users/asteriska/Asteriska/nwu/projects/23SumrCCS/astBugDetection/langParser/ControlFlowGraph')
+here = os.path.dirname(os.path.abspath(__file__))
+control_flow_graph_root = os.path.abspath(os.path.join(here, "..", "..", "ControlFlowGraph"))
+sys.path.append(control_flow_graph_root)
 
 from antlr4 import CommonTokenStream, StdinStream, FileStream
 
@@ -18,7 +20,7 @@ def prompt():
     is_verbose = input("Verbose graph draw (y/n)? ").startswith(("y", "Y"))
     file_path = None
     if is_read_file:
-        default_path = "/Users/asteriska/Asteriska/nwu/projects/23SumrCCS/astBugDetection/langParser/ControlFlowGraph/test_source/1.cpp"
+        default_path = os.path.join(control_flow_graph_root, "test_source", "1.cpp")
         file_path = input("Enter file path: ")
         file_path = file_path if file_path else default_path
 
@@ -75,7 +77,7 @@ def print_coverage_paths(g):
 def main():
     #is_read_file, is_verbose, file_path = prompt()
     #stream = (FileStream(file_path, encoding="utf8") if is_read_file else StdinStream())
-    default_path = "/Users/asteriska/Asteriska/nwu/projects/23SumrCCS/astBugDetection/langParser/ControlFlowGraph/test_source/1.cpp"
+    default_path = os.path.join(control_flow_graph_root, "test_source", "1.cpp")
     stream = FileStream(default_path, encoding="utf8")
     funcs, token_stream = extract(stream)
     #token_stream = extract(stream)

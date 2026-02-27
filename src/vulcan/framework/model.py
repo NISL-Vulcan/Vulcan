@@ -1,7 +1,7 @@
 import torch
 from torch import nn
 
-from framework.models import *
+from vulcan.framework.models import *
 
 #手动构建字典
 MODEL_DICT = {

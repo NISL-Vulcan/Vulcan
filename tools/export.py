@@ -4,9 +4,9 @@ import yaml
 import onnx
 from pathlib import Path
 from onnxsim import simplify
-from framework.models import *
-from framework.datasets import *
-from framework.model import get_model
+from vulcan.framework.models import *
+from vulcan.framework.datasets import *
+from vulcan.framework.model import get_model
 
 def export_onnx(model, inputs, file):
     torch.onnx.export(

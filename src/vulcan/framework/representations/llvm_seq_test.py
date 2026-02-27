@@ -1,9 +1,9 @@
 import os
 
-from framework.representations.extractors.extractors import Visitor
-from framework.representations.extractors.extractors import llvm
-from framework.representations.llvm_seq import LLVMSeqBuilder
-from framework.representations.llvm_seq import LLVMSeqVisitor
+from vulcan.framework.representations.extractors.extractors import Visitor
+from vulcan.framework.representations.extractors.extractors import llvm
+from vulcan.framework.representations.llvm_seq import LLVMSeqBuilder
+from vulcan.framework.representations.llvm_seq import LLVMSeqVisitor
 
 
 program_1fn_2 = """

@@ -1,6 +1,6 @@
 import networkx as nx
 
-import framework.representations.common as common
+from vulcan.framework.representations import common
 
 
 def sample_graph():

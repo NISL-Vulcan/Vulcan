@@ -3,13 +3,13 @@ import pytest
 
 import networkx as nx
 
-from framework.representations.extractors.extractors import Visitor
-from framework.representations.extractors.extractors import llvm
-from framework.representations.llvm_graphs import LLVMGraphBuilder
-from framework.representations.llvm_graphs import LLVMCDFGVisitor
-from framework.representations.llvm_graphs import LLVMCDFGCallVisitor
-from framework.representations.llvm_graphs import LLVMCDFGPlusVisitor
-from framework.representations.llvm_graphs import LLVMProGraMLVisitor
+from vulcan.framework.representations.extractors.extractors import Visitor
+from vulcan.framework.representations.extractors.extractors import llvm
+from vulcan.framework.representations.llvm_graphs import LLVMGraphBuilder
+from vulcan.framework.representations.llvm_graphs import LLVMCDFGVisitor
+from vulcan.framework.representations.llvm_graphs import LLVMCDFGCallVisitor
+from vulcan.framework.representations.llvm_graphs import LLVMCDFGPlusVisitor
+from vulcan.framework.representations.llvm_graphs import LLVMProGraMLVisitor
 
 
 program_1fn_2 = """

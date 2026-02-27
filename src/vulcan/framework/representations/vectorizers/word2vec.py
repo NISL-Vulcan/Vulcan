@@ -2,7 +2,7 @@ from typing import Tuple, Dict, List
 
 from gensim.models.word2vec import Word2Vec
 import numpy as np
-from framework.representations.vectorizers.vectorizer import Vectorizer
+from vulcan.framework.representations.vectorizers.vectorizer import Vectorizer
 
 
 class W2vVectorizer(Vectorizer):

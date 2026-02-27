@@ -27,7 +27,7 @@ import requests
 sys.path.append(os.path.join(os.path.dirname(__file__), 'framework'))
 
 # 导入配置模板系统
-from framework.config_templates import ConfigTemplateManager
+from vulcan.framework.config_templates import ConfigTemplateManager
 
 app = Flask(__name__)
 CORS(app)  # 允许跨域请求

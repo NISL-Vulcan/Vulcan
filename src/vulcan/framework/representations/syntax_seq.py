@@ -1,9 +1,9 @@
-from framework.representations.extractors import clang_driver_scoped_options
-from framework.representations.extractors.extractors import Visitor
-from framework.representations.extractors.extractors import ClangDriver
-from framework.representations.extractors.extractors import ClangExtractor
-from framework.representations.extractors.extractors import clang
-from framework.representations import common
+from vulcan.framework.representations.extractors import clang_driver_scoped_options
+from vulcan.framework.representations.extractors.extractors import Visitor
+from vulcan.framework.representations.extractors.extractors import ClangDriver
+from vulcan.framework.representations.extractors.extractors import ClangExtractor
+from vulcan.framework.representations.extractors.extractors import clang
+from vulcan.framework.representations import common
 
 
 class SyntaxSeqVisitor(Visitor):

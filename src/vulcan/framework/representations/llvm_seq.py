@@ -1,9 +1,9 @@
-from framework.representations.extractors import clang_driver_scoped_options
-from framework.representations.extractors.extractors import Visitor
-from framework.representations.extractors.extractors import ClangDriver
-from framework.representations.extractors.extractors import LLVMIRExtractor
-from framework.representations.extractors.extractors import llvm
-from framework.representations import common
+from vulcan.framework.representations.extractors import clang_driver_scoped_options
+from vulcan.framework.representations.extractors.extractors import Visitor
+from vulcan.framework.representations.extractors.extractors import ClangDriver
+from vulcan.framework.representations.extractors.extractors import LLVMIRExtractor
+from vulcan.framework.representations.extractors.extractors import llvm
+from vulcan.framework.representations import common
 
 
 def merge_after_element_on_condition(elements, element_conditions):

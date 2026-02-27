@@ -16,14 +16,14 @@ from torch.nn.parallel import DistributedDataParallel as DDP
 from torch.utils.data import DistributedSampler, RandomSampler
 from torch import distributed as dist
 
-from framework.models import *
-from framework.datasets import * 
-from framework.model import get_model
-from framework.dataset import get_dataset, get_dataloader
-from framework.losses import get_loss
-from framework.schedulers import get_scheduler
-from framework.optimizers import get_optimizer
-from framework.utils.utils import fix_seeds, setup_cudnn, cleanup_ddp, setup_ddp
+from vulcan.framework.models import *
+from vulcan.framework.datasets import * 
+from vulcan.framework.model import get_model
+from vulcan.framework.dataset import get_dataset, get_dataloader
+from vulcan.framework.losses import get_loss
+from vulcan.framework.schedulers import get_scheduler
+from vulcan.framework.optimizers import get_optimizer
+from vulcan.framework.utils.utils import fix_seeds, setup_cudnn, cleanup_ddp, setup_ddp
 from val import evaluate
 
 #ordered load yaml files

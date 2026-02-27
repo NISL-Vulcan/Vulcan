@@ -1,11 +1,11 @@
 import os
 
-from framework.representations.extractors.extractors import Visitor
-from framework.representations.extractors.extractors import clang
-from framework.representations.syntax_seq import SyntaxSeqBuilder
-from framework.representations.syntax_seq import SyntaxSeqVisitor
-from framework.representations.syntax_seq import SyntaxTokenkindVisitor
-from framework.representations.syntax_seq import SyntaxTokenkindVariableVisitor
+from vulcan.framework.representations.extractors.extractors import Visitor
+from vulcan.framework.representations.extractors.extractors import clang
+from vulcan.framework.representations.syntax_seq import SyntaxSeqBuilder
+from vulcan.framework.representations.syntax_seq import SyntaxSeqVisitor
+from vulcan.framework.representations.syntax_seq import SyntaxTokenkindVisitor
+from vulcan.framework.representations.syntax_seq import SyntaxTokenkindVariableVisitor
 
 
 program_1fn_2 = """

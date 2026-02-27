@@ -8,12 +8,12 @@ from tabulate import tabulate
 from torch.utils.data import DataLoader
 from torch.nn import functional as F
 
-from framework.models import *
-from framework.datasets import *
-from framework.metrics import Metrics
-from framework.utils.utils import setup_cudnn
-from framework.dataset import get_dataset
-from framework.model import get_model
+from vulcan.framework.models import *
+from vulcan.framework.datasets import *
+from vulcan.framework.metrics import Metrics
+from vulcan.framework.utils.utils import setup_cudnn
+from vulcan.framework.dataset import get_dataset
+from vulcan.framework.model import get_model
 
 def convert_output(pred):
     # 将一维预测转换为二维

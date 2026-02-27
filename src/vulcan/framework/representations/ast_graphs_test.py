@@ -3,13 +3,13 @@ import os
 import networkx as nx
 import pytest
 
-from framework.representations.extractors.extractors import Visitor
-from framework.representations.extractors.extractors import clang
-from framework.representations.ast_graphs import ASTGraphBuilder
-from framework.representations.ast_graphs import ASTVisitor
-from framework.representations.ast_graphs import ASTDataVisitor
-from framework.representations.ast_graphs import ASTDataCFGVisitor
-from framework.representations.ast_graphs import ASTDataCFGTokenVisitor
+from vulcan.framework.representations.extractors.extractors import Visitor
+from vulcan.framework.representations.extractors.extractors import clang
+from vulcan.framework.representations.ast_graphs import ASTGraphBuilder
+from vulcan.framework.representations.ast_graphs import ASTVisitor
+from vulcan.framework.representations.ast_graphs import ASTDataVisitor
+from vulcan.framework.representations.ast_graphs import ASTDataCFGVisitor
+from vulcan.framework.representations.ast_graphs import ASTDataCFGTokenVisitor
 
 
 program_1fn_2 = """

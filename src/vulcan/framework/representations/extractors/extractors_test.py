@@ -1,11 +1,11 @@
 import pytest
 
-from framework.representations.extractors.extractors import Visitor
-from framework.representations.extractors.extractors import ClangDriver
-from framework.representations.extractors.extractors import ClangExtractor
-from framework.representations.extractors.extractors import LLVMIRExtractor
-from framework.representations.extractors.extractors import clang
-from framework.representations.extractors.extractors import llvm
+from vulcan.framework.representations.extractors.extractors import Visitor
+from vulcan.framework.representations.extractors.extractors import ClangDriver
+from vulcan.framework.representations.extractors.extractors import ClangExtractor
+from vulcan.framework.representations.extractors.extractors import LLVMIRExtractor
+from vulcan.framework.representations.extractors.extractors import clang
+from vulcan.framework.representations.extractors.extractors import llvm
 
 
 program_1fn_1 = """

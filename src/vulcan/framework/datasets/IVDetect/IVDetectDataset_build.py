@@ -172,7 +172,7 @@ def IVD_dataset_build(glove_flag=False):
 import os
 import numpy as np
 from tqdm import tqdm
-import framework.datasets.IVDetect.utils.process as process
+from vulcan.framework.datasets.IVDetect.utils import process
 import pandas as pd
 import torch
 from torch_geometric.data import Data
