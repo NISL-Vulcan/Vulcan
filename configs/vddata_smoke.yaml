@@ -1,0 +1,46 @@
+DEVICE: cpu
+SAVE_DIR: output_smoke
+
+MODEL:
+  NAME: VulDeepecker
+  BACKBONE: ""
+  PARAMS: {}
+
+DATASET:
+  NAME: VDdata
+  ROOT: ""
+  dataloader: normal
+  PARAMS:
+    tokenizer: null
+    args:
+      file_path: tests/fixtures/vddata_sample.gadgets
+      training_percent: 1.0
+  PREPROCESS:
+    ENABLE: false
+    COMPOSE: []
+
+TRAIN:
+  BATCH_SIZE: 2
+  EPOCHS: 1
+  EVAL_INTERVAL: 1
+  AMP: false
+  DDP: false
+
+EVAL:
+  MODEL_PATH: ""
+  MSF:
+    ENABLE: false
+
+LOSS:
+  NAME: CrossEntropy
+
+OPTIMIZER:
+  NAME: adamax
+  LR: 0.002
+  WEIGHT_DECAY: 0.0
+
+SCHEDULER:
+  NAME: polylr
+  POWER: 0.9
+  WARMUP: 0
+  WARMUP_RATIO: 0.0

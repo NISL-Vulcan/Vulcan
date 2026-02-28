@@ -10,7 +10,6 @@ from torch import nn, Tensor
 from torch.autograd import profiler
 from typing import Union
 from tabulate import tabulate
-from vulcan.framework import models
 from .ddp import setup_ddp, cleanup_ddp, reduce_tensor
 
 
@@ -67,6 +66,8 @@ def throughput(dataloader, model: nn.Module, times: int = 30):
 '''
 
 def show_models():
+    """延迟导入模型模块，仅在需要展示模型列表时才加载，避免不必要的依赖。"""
+    from vulcan.framework import models
     model_names = models.__all__
     model_variants = [list(eval(f'models.{name.lower()}_settings').keys()) for name in model_names]
 

@@ -6,8 +6,6 @@ from tqdm import tqdm
 from tabulate import tabulate
 from torch.utils.data import DataLoader
 
-from vulcan.framework.models import *
-from vulcan.framework.datasets import *
 from vulcan.framework.metrics import Metrics
 from vulcan.framework.utils.utils import setup_cudnn
 from vulcan.framework.dataset import get_dataset

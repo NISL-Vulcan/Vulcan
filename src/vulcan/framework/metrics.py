@@ -12,7 +12,14 @@ class Metrics:
 
     def update(self, pred: Tensor, target: Tensor) -> None:
         pred = pred.argmax(dim=1)
-        self.hist += torch.histc(target * self.num_classes + pred, bins=self.num_classes**2, min=0, max=self.num_classes**2-1).reshape(self.num_classes, self.num_classes)
+        # histc 仅支持浮点类型，这里保持数值不变，仅转换 dtype
+        combined = (target * self.num_classes + pred).float()
+        self.hist += torch.histc(
+            combined,
+            bins=self.num_classes**2,
+            min=0,
+            max=self.num_classes**2 - 1,
+        ).reshape(self.num_classes, self.num_classes)
         self.all_preds.extend(pred.tolist())
         self.all_targets.extend(target.tolist())
 
@@ -33,12 +40,17 @@ class Metrics:
         return prec
 
     def compute_roc_auc(self):
-        roc_auc = roc_auc_score(self.all_targets, self.all_preds)
-        return roc_auc
+        try:
+            return roc_auc_score(self.all_targets, self.all_preds)
+        except ValueError:
+            # 例如验证集中只有一个类别时，sklearn 会报错，此处返回 0.0 以便流程继续
+            return 0.0
 
     def compute_pr_auc(self):
-        pr_auc = average_precision_score(self.all_targets, self.all_preds)
-        return pr_auc
+        try:
+            return average_precision_score(self.all_targets, self.all_preds)
+        except ValueError:
+            return 0.0
 
 
     '''

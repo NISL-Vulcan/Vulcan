@@ -1,76 +1,67 @@
 import torch
 from torch import nn
-#from torch.utils.data import DataLoader
 from torch.nn.parallel import DistributedDataParallel as DDP
 from torch.utils.data import DistributedSampler, RandomSampler
+from torch.utils.data import DataLoader as TorchDataLoader
 from torch import distributed as dist
 
-from vulcan.framework.datasets import *
-from vulcan.framework.datasets.XFGDataset_build import DWK_Dataset
+from importlib import import_module
+from typing import List, Dict, Tuple, Any
+
 from vulcan.framework.preprocess import get_preprocess
 
-from torch_geometric.data import Data,DataLoader
-from typing import List
 
-
-#手动构建字典
-DATASETS_DICT = {
-    'ReGVD': ReGVD,
-    'Devign_Partial': Devign_Partial,
-    'CodeXGLUE': CodeXGLUE,
-    'DWK_Dataset': DWK_Dataset,
-    'IVDDataset': IVDetectDataset,
-    'LineVul': LineVul,
-    'VDdata': VDdata,
-    'vdet_data': vdet_data
+_DATASET_LOADERS: Dict[str, Tuple[str, str]] = {
+    # 图数据集
+    "ReGVD": ("vulcan.framework.datasets.regvd", "ReGVD"),
+    "Devign_Partial": ("vulcan.framework.datasets.devign_partial", "Devign_Partial"),
+    "CodeXGLUE": ("vulcan.framework.datasets.CodeXGLUE", "CodeXGLUE"),
+    "DWK_Dataset": ("vulcan.framework.datasets.XFGDataset_build", "DWK_Dataset"),
+    "IVDDataset": ("vulcan.framework.datasets.IVDetect.IVDetectDataset", "IVDetectDataset"),
+    "LineVul": ("vulcan.framework.datasets.linevul", "LineVul"),
+    "vdet_data": ("vulcan.framework.datasets.vdet_data", "vdet_data"),
+    # 序列/向量数据集
+    "VDdata": ("vulcan.framework.datasets.vddata", "VDdata"),
+    "test_source": ("vulcan.framework.datasets.test_source", "test_source"),
 }
 
 
-# 自动构建字典
-#DATASETS_DICT = {k: v for k, v in globals().items() if isinstance(v, type) and issubclass(v, nn.Module)}
+def get_dataset(config: Dict[str, Any], split: str):
+    dataset_cfg = config["DATASET"]
+    train_cfg, eval_cfg = config["TRAIN"], config["EVAL"]
 
+    dataset_name = dataset_cfg["NAME"]
+    dataset_param = dataset_cfg.get("PARAMS") or {}
 
-def get_dataset(config, split):
+    if dataset_name not in _DATASET_LOADERS:
+        raise ValueError(f"The dataset name {dataset_name} does not exist. Available: {sorted(_DATASET_LOADERS.keys())}")
 
-    dataset_cfg = config['DATASET']
-    train_cfg, eval_cfg = config['TRAIN'], config['EVAL']
+    # preprocess dataset
+    preprocess_cfg = dataset_cfg["PREPROCESS"]
+    preprocess_format = None
+    if preprocess_cfg["ENABLE"]:
+        preprocess_compose = preprocess_cfg["COMPOSE"]
+        print("preprocess compose:")
+        print(preprocess_compose)
 
-    dataset_name = dataset_cfg['NAME']  # 这个应该是从配置文件中读取的模型名称
-    dataset_param = dataset_cfg['PARAMS']  # 这个应该是从配置文件中读取的模型参数
-    #待测试 不知道能不能直接把model——param的字典转为参数传递
-    # print(dataset_name)
-    # print(dataset_param)
-    # print(DATASETS_DICT)
-    if dataset_name in DATASETS_DICT:
-        
-        #preprocess dataset
-        preprocess_cfg = dataset_cfg['PREPROCESS']
-        preprocess_format = None
-        if preprocess_cfg['ENABLE']:
-            #get preprocess compose 
-            preprocess_compose = preprocess_cfg['COMPOSE']
-            print('preprocess compose:')
-            print(preprocess_compose)
+        if split == "train":
+            preprocess_format = get_preprocess(train_cfg["INPUT_SIZE"], preprocess_compose)
+        elif split == "val":
+            preprocess_format = get_preprocess(eval_cfg["INPUT_SIZE"], preprocess_compose)
+        else:
+            print(split)
+            print("Invalid split specified")
 
-            if split == 'train':
-                preprocess_format = get_preprocess(train_cfg['INPUT_SIZE'], preprocess_compose)
-            elif split == 'val':
-                preprocess_format = get_preprocess(eval_cfg['INPUT_SIZE'], preprocess_compose)
-            else:
-                print(split)
-                print('Invalid split specified')
+    module_name, cls_name = _DATASET_LOADERS[dataset_name]
+    module = import_module(module_name)
+    cls = getattr(module, cls_name)
 
-        #construct dataset
-        dataset = DATASETS_DICT[dataset_name](split = split, 
-                                              root = dataset_cfg['ROOT'],
-                                              preprocess_format = preprocess_format, 
-                                              **dataset_param
-                                              )
-    else:
-        print("The dataset name {} does not exist".format(dataset_name))
-        exit()
-        dataset = None
-
+    dataset = cls(
+        split=split,
+        root=dataset_cfg["ROOT"],
+        preprocess_format=preprocess_format,
+        **dataset_param,
+    )
     return dataset
 '''
 from vulcan.framework.datasets.XFGDataset_build import XFGSample,XFGBatch
@@ -89,6 +80,14 @@ def graph_collate_fn(samples: List[XFGSample]) -> XFGBatch:
 
 '''
 def graph_collate_fn(batch):
+    try:
+        from torch_geometric.data import Data
+    except Exception as e:  # pragma: no cover
+        raise RuntimeError(
+            "当前配置使用 geometric dataloader，但未安装 torch_geometric。"
+            "请先安装 PyG（torch-geometric/torch-scatter/torch-sparse/torch-cluster）后重试。"
+        ) from e
+
     # batch是一个列表，其中的元素是您的数据集__getitem__返回的数据
     # 例如：[(input_x1, label1), (input_x2, label2), ...]
     #print('print graph collate batch')
@@ -134,10 +133,10 @@ def graph_collate_fn(batch):
 def get_dataloader(config, split, dataset, batch_size, num_workers=1, **kw):
     if 'dataloader' in config and config['dataloader'] == 'geometric':
         if split == 'train':
-            return DataLoader(dataset, collate_fn = graph_collate_fn, batch_size=batch_size, num_workers=num_workers, drop_last=True, pin_memory=False, sampler=kw['sampler'])
-        return DataLoader(dataset, collate_fn=graph_collate_fn, batch_size=1, num_workers=1, pin_memory=True)
+            return TorchDataLoader(dataset, collate_fn=graph_collate_fn, batch_size=batch_size, num_workers=num_workers, drop_last=True, pin_memory=False, sampler=kw['sampler'])
+        return TorchDataLoader(dataset, collate_fn=graph_collate_fn, batch_size=1, num_workers=1, pin_memory=True)
     
     #sequence dataset
     if split == 'train':
-        return DataLoader(dataset, batch_size=batch_size, num_workers=num_workers, drop_last=True, pin_memory=False, sampler=kw['sampler'])
-    return DataLoader(dataset, batch_size=1, num_workers=1, pin_memory=True)
+        return TorchDataLoader(dataset, batch_size=batch_size, num_workers=num_workers, drop_last=True, pin_memory=False, sampler=kw['sampler'])
+    return TorchDataLoader(dataset, batch_size=1, num_workers=1, pin_memory=True)

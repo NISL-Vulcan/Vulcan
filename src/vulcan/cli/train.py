@@ -6,7 +6,6 @@ import multiprocessing as mp
 from tabulate import tabulate
 from tqdm import tqdm
 from torch.utils.data import DataLoader
-from torch_geometric.data import Data
 
 from pathlib import Path
 from torch.utils.tensorboard import SummaryWriter
@@ -15,8 +14,6 @@ from torch.nn.parallel import DistributedDataParallel as DDP
 from torch.utils.data import DistributedSampler, RandomSampler
 from torch import distributed as dist
 
-from vulcan.framework.models import *
-from vulcan.framework.datasets import * 
 from vulcan.framework.model import get_model
 from vulcan.framework.dataset import get_dataset, get_dataloader
 from vulcan.framework.losses import get_loss
@@ -105,7 +102,8 @@ def main(cfg, gpu, save_dir: Path):
             scaler.step(optimizer)
             scaler.update()
             scheduler.step()
-            torch.cuda.synchronize()
+            if torch.cuda.is_available():
+                torch.cuda.synchronize()
 
             lr = scheduler.get_lr()
             lr = sum(lr) / len(lr)

@@ -1,36 +1,34 @@
-import torch
-from torch import nn
+from __future__ import annotations
 
-from vulcan.framework.models import *
+from importlib import import_module
+from typing import Any, Dict, Tuple
 
-#手动构建字典
-MODEL_DICT = {
-    'GNNReGVD': GNNReGVD,
-    'Devign': Devign,
-    'LineVul': LineVul,
-    'VulDeepecker': VulDeepecker,
-    'CodeXGLUE': CodeXGLUE_baseline,
-    'Russell': Russell,
-    'VulBERTa_CNN': VulBERTa_CNN,
-    'Concoction': Concoction,
-    'DeepWuKong': DeepWuKong,
-    'IVDetect': IVDmodel,
-    'Vdet_for_java': vdet_for_java
+
+# 为了避免在 CLI 启动时一次性 import 全部模型（其中部分依赖 torch_geometric/dgl 等可选依赖），
+# 这里改为按需动态加载。
+_MODEL_LOADERS: Dict[str, Tuple[str, str]] = {
+    "GNNReGVD": ("vulcan.framework.models.GNNReGVD", "GNNReGVD"),
+    "Devign": ("vulcan.framework.models.devign_re", "Devign"),
+    "LineVul": ("vulcan.framework.models.LineVul", "LineVul"),
+    "VulDeepecker": ("vulcan.framework.models.VulDeePecker", "VulDeepecker"),
+    "CodeXGLUE": ("vulcan.framework.models.CodeXGLUE_baseline", "CodeXGLUE_baseline"),
+    "Russell": ("vulcan.framework.models.Russell_et_net", "Russell"),
+    "VulBERTa_CNN": ("vulcan.framework.models.VulBERTa_CNN", "VulBERTa_CNN"),
+    "Concoction": ("vulcan.framework.models.Concoction", "Concoction"),
+    "DeepWuKong": ("vulcan.framework.models.deepwukong.DWK_gnn", "DeepWuKong"),
+    "IVDetect": ("vulcan.framework.models.IVDetect.IVDetect_model", "IVDmodel"),
+    "Vdet_for_java": ("vulcan.framework.models.VDET", "vdet_for_java"),
 }
 
 
-# 自动构建字典
-#MODEL_DICT = {k: v for k, v in globals().items() if isinstance(v, type) and issubclass(v, nn.Module)}
+def get_model(config: Dict[str, Any]):
+    model_name = config["NAME"]
+    model_param = config.get("PARAMS") or {}
 
+    if model_name not in _MODEL_LOADERS:
+        raise ValueError(f"Unknown model name: {model_name}. Available: {sorted(_MODEL_LOADERS.keys())}")
 
-def get_model(config):
-    model_name = config['NAME']  # 这个应该是从配置文件中读取的模型名称
-    model_param = config['PARAMS']  # 这个应该是从配置文件中读取的模型参数
-    #待测试 不知道能不能直接把model——param的字典转为参数传递
-    if model_name in MODEL_DICT:
-        model = MODEL_DICT[model_name](**model_param)
-    else:
-        print("The model name {} does not exist".format(model_name))
-        model = None
-
-    return model
+    module_name, cls_name = _MODEL_LOADERS[model_name]
+    module = import_module(module_name)
+    cls = getattr(module, cls_name)
+    return cls(**model_param)

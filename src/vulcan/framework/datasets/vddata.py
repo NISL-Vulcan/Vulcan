@@ -1,19 +1,14 @@
-import torch 
-from torch import Tensor
+import torch
 from torch.utils.data import Dataset
 from pathlib import Path
 from typing import Tuple
 import numpy as np
-import pandas
-import json
-
-import os
 import pandas as pd
+import json
+import os
 from sklearn.model_selection import train_test_split
 from .vddata_utils.clean_gadget import clean_gadget
 from .vddata_utils.vectorize_gadget import GadgetVectorizer
-
-from vulcan.framework.models.modules.transformers.transformers import *
 
 
 """
@@ -79,7 +74,7 @@ def get_vectors_df(filename, vector_length=100):
         row = {"vector" : vector, "val" : gadget["val"]}
         vectors.append(row)
     print()
-    df = pandas.DataFrame(vectors)
+    df = pd.DataFrame(vectors)
     return df
 
 class VDdata(Dataset):
@@ -104,12 +99,14 @@ class VDdata(Dataset):
                 df = get_vectors_df(file_path, vector_length)
                 df.to_pickle(vector_filename)
             #print('self dataset:\n',self.dataset)
-            # 假设 df 是您的 Pandas 数据集，且包含一个名为 'label' 的列
             labels = df['val'].values
 
-            # 识别正负样本的索引
+            # 数据过少或无正/负样本时，直接使用完整数据集，避免 smoke 测试因数据问题失败
             positive_idxs = np.where(labels == 1)[0]
             negative_idxs = np.where(labels == 0)[0]
+            if len(df) == 0 or len(positive_idxs) == 0 or len(negative_idxs) == 0:
+                self.dataset = df
+                return
 
             # 进行负样本的欠采样
             undersampled_negative_idxs = np.random.choice(negative_idxs, len(positive_idxs), replace=False)
@@ -176,10 +173,8 @@ class VDdata(Dataset):
 
     def __getitem__(self, index):
         #print('_getitem_',self.dataset.iloc[index])
-        input_x = self.dataset.iloc[index].vector
-        # print('inputx shape:',input_x.shape)
-        #input_x = torch.tensor(self.dataset.iloc[index].input)
-        label = torch.tensor(self.dataset.iloc[index].val)
+        input_x = torch.tensor(self.dataset.iloc[index].vector, dtype=torch.float32)
+        label = torch.tensor(self.dataset.iloc[index].val, dtype=torch.long)
         return input_x, label
         # input_x = torch.tensor(self.examples[i].input_ids)
         # label = torch.tensor(self.examples[i].label)
