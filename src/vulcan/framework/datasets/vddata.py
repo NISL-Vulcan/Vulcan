@@ -13,7 +13,7 @@ from sklearn.model_selection import train_test_split
 from .vddata_utils.clean_gadget import clean_gadget
 from .vddata_utils.vectorize_gadget import GadgetVectorizer
 
-from framework.models.modules.transformers.transformers import *
+from vulcan.framework.models.modules.transformers.transformers import *
 
 
 """

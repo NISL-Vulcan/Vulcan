@@ -10,7 +10,7 @@ from torch.nn import CrossEntropyLoss, MSELoss
 from .modules.GNN.modulesGNN import *
 from .modules.GNN.utils import preprocess_features, preprocess_adj
 from .modules.GNN.utils import *
-from framework.models.modules.transformers.transformers import *
+from vulcan.framework.models.modules.transformers.transformers import *
 
 
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")

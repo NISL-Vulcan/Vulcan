@@ -5,7 +5,7 @@ import torch.nn as nn
 import torch.nn.functional as F
 from typing import List
 
-from framework.utils.training import cut_sys_encoded_contexts
+from vulcan.framework.utils.training import cut_sys_encoded_contexts
 
 
 class MulVDP_BLSTM(nn.Module):

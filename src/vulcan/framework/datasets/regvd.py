@@ -6,7 +6,7 @@ from typing import Tuple
 import numpy as np
 import json,math
 
-from framework.models.modules.transformers.transformers import *
+from vulcan.framework.models.modules.transformers.transformers import *
 
 class InputFeatures(object):
     """A single training/test features for a example."""

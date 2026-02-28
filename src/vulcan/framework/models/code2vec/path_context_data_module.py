@@ -7,7 +7,7 @@ from torch.utils.data import DataLoader, Dataset
 
 from models.code2seq.path_context_dataset import PathContextDataset, PathContextSample
 from models.code2seq.data_classes import PathContextBatch
-from framework.utils.vocabulary import Vocabulary_c2s
+from vulcan.framework.utils.vocabulary import Vocabulary_c2s
 
 class C2VPathContextDataModule:
     def __init__(self, config: DictConfig, vocabulary: Vocabulary_c2s):

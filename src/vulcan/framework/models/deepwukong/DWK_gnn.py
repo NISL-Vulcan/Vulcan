@@ -1,7 +1,7 @@
 from torch import nn
 from omegaconf import DictConfig
 import torch
-from framework.datasets.XFGDataset_build import XFGBatch
+from vulcan.framework.datasets.XFGDataset_build import XFGBatch
 from typing import Dict
 #from pytorch_lightning import LightningModule
 from .modules.gnns import GraphConvEncoder, GatedGraphConvEncoder
@@ -10,7 +10,7 @@ from torch.optim import Adam, SGD, Adamax, RMSprop
 import torch.nn.functional as F
 #from src.metrics import Statistic
 from torch_geometric.data import Batch
-from framework.datasets.XFGDataset_utils.vocabulary import Vocabulary
+from vulcan.framework.datasets.XFGDataset_utils.vocabulary import Vocabulary
 from types import SimpleNamespace
 
 

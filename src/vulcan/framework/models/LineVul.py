@@ -2,7 +2,7 @@ import torch
 import torch.nn as nn
 from torch.nn import CrossEntropyLoss
 from transformers import RobertaForSequenceClassification
-from framework.models.modules.transformers.transformers import *
+from vulcan.framework.models.modules.transformers.transformers import *
 
 class RobertaClassificationHead(nn.Module):
     """Head for sentence-level classification tasks."""

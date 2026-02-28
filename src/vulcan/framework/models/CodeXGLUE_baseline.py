@@ -6,7 +6,7 @@ import torch
 from torch.autograd import Variable
 import copy
 from torch.nn import CrossEntropyLoss, MSELoss
-from framework.models.modules.transformers.transformers import *
+from vulcan.framework.models.modules.transformers.transformers import *
 
     
     

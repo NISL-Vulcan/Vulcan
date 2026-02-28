@@ -23,12 +23,26 @@ Getting started with vulcan Detection is simple and straightforward. Follow the 
 
 
 #### Conda Installation
-Type the following commands in your Shell
-```
-conda create -n vulcan && conda activate vulcan
+推荐使用 conda 保证依赖完整（Python 3.10，PyTorch/CUDA 等由 vulcan.yaml 提供）。`vulcan.yaml` 已与 `pyproject.toml` 对齐，仅 DGL 需从官方 wheel 单独安装。
+
+**方式一：从 vulcan.yaml 创建环境（推荐）**
+```bash
 git clone https://github.com/NISL-Vulcan/Vulcan.git
-cd Vulcan && chmod +x ./install.sh
-./install.sh
+cd Vulcan
+conda env create -f vulcan.yaml -n vulcan
+conda activate vulcan
+# DGL 1.1.3 不在 PyPI，需从官方 wheel 安装
+pip install dgl -f https://data.dgl.ai/wheels/repo.html
+pip install -e .
+```
+
+**方式二：仅创建 Python 3.10 环境后安装**
+```bash
+conda create -n vulcan python=3.10 -y
+conda activate vulcan
+cd Vulcan
+pip install dgl -f https://data.dgl.ai/wheels/repo.html
+pip install -e .
 ```
 
 #### Direct Installation

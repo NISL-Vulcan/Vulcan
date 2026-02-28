@@ -6,7 +6,7 @@ from torch.utils.data import DataLoader
 
 from models.mulvuldeepecker.data_classes import MulVDPSample, MulVDPBatch
 from models.mulvuldeepecker.MulVDP_dataset import MulVDPDataset
-from framework.utils.vocabulary import Vocabulary_token
+from vulcan.framework.utils.vocabulary import Vocabulary_token
 from math import ceil
 
 

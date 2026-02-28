@@ -8,7 +8,7 @@ import pandas as pd
 import json
 from tqdm import tqdm
 
-from framework.models.modules.transformers.transformers import *
+from vulcan.framework.models.modules.transformers.transformers import *
 
 class InputFeatures(object):
     """A single training/test features for a example."""

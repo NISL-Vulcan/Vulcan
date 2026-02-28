@@ -6,8 +6,8 @@ from omegaconf import DictConfig
 from torch.utils.data import Dataset
 
 from models.code2seq.data_classes import PathContextSample, FROM_TOKEN, PATH_NODES, TO_TOKEN, ContextPart
-from framework.utils.converting import strings_to_wrapped_numpy
-from framework.utils.vocabulary import Vocabulary_c2s
+from vulcan.framework.utils.converting import strings_to_wrapped_numpy
+from vulcan.framework.utils.vocabulary import Vocabulary_c2s
 
 
 class PathContextDataset(Dataset):

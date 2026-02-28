@@ -109,7 +109,7 @@ class Code2VecAttn(LightningModule):
         return self._general_epoch_end(outputs, "test")
  """
 import torch.nn as nn
-from framework.utils.vocabulary import Vocabulary_c2s, PAD
+from vulcan.framework.utils.vocabulary import Vocabulary_c2s, PAD
 from .path_encoder import PathEncoder
 from .path_classifier import PathClassifier
 

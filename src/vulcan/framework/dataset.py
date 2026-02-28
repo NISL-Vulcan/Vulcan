@@ -5,9 +5,9 @@ from torch.nn.parallel import DistributedDataParallel as DDP
 from torch.utils.data import DistributedSampler, RandomSampler
 from torch import distributed as dist
 
-from framework.datasets import *
-from framework.datasets.XFGDataset_build import DWK_Dataset
-from framework.preprocess import get_preprocess
+from vulcan.framework.datasets import *
+from vulcan.framework.datasets.XFGDataset_build import DWK_Dataset
+from vulcan.framework.preprocess import get_preprocess
 
 from torch_geometric.data import Data,DataLoader
 from typing import List
@@ -73,7 +73,7 @@ def get_dataset(config, split):
 
     return dataset
 '''
-from framework.datasets.XFGDataset_build import XFGSample,XFGBatch
+from vulcan.framework.datasets.XFGDataset_build import XFGSample,XFGBatch
 def graph_collate_fn(samples: List[XFGSample]) -> XFGBatch:
     
     """
