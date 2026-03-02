@@ -23,7 +23,10 @@ def evaluate(model, dataloader, device):
     model.eval()
     metrics = Metrics(dataloader.dataset.n_classes, device)
     for input_x, labels in tqdm(dataloader):
-        input_x = input_x.to(device)
+        try:
+            input_x = input_x.to(device)
+        except AttributeError:
+            pass
         preds = model(input_x).to(device)
         #preds = convert_output(preds)
         labels = torch.tensor([labels])

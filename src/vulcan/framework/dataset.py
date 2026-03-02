@@ -23,6 +23,8 @@ _DATASET_LOADERS: Dict[str, Tuple[str, str]] = {
     # Sequence/vector datasets
     "VDdata": ("vulcan.framework.datasets.vddata", "VDdata"),
     "test_source": ("vulcan.framework.datasets.test_source", "test_source"),
+    # AST decomposition datasets
+    "TrVD": ("vulcan.framework.datasets.trvd_dataset", "TrVDDataset"),
 }
 
 
@@ -130,12 +132,29 @@ def graph_collate_fn(batch):
     return data_list, labels
 
 
+def trvd_collate_fn(batch):
+    """Collate function for TrVD dataset.
+
+    Each sample is ``(subtree_list, label)`` where *subtree_list* is a
+    variable-length list of nested index lists.  We simply group them
+    and stack labels.
+    """
+    inputs = [item[0] for item in batch]
+    labels = torch.stack([item[1] for item in batch], dim=0)
+    return inputs, labels
+
+
 def get_dataloader(config, split, dataset, batch_size, num_workers=1, **kw):
     if 'dataloader' in config and config['dataloader'] == 'geometric':
         if split == 'train':
             return TorchDataLoader(dataset, collate_fn=graph_collate_fn, batch_size=batch_size, num_workers=num_workers, drop_last=True, pin_memory=False, sampler=kw['sampler'])
         return TorchDataLoader(dataset, collate_fn=graph_collate_fn, batch_size=1, num_workers=1, pin_memory=True)
-    
+
+    if 'dataloader' in config and config['dataloader'] == 'trvd':
+        if split == 'train':
+            return TorchDataLoader(dataset, collate_fn=trvd_collate_fn, batch_size=batch_size, num_workers=num_workers, drop_last=True, pin_memory=False, sampler=kw['sampler'])
+        return TorchDataLoader(dataset, collate_fn=trvd_collate_fn, batch_size=1, num_workers=1, pin_memory=True)
+
     #sequence dataset
     if split == 'train':
         return TorchDataLoader(dataset, batch_size=batch_size, num_workers=num_workers, drop_last=True, pin_memory=False, sampler=kw['sampler'])
