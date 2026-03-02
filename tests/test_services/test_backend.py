@@ -1,5 +1,7 @@
 """Unit tests for vulcan.services."""
 import pytest
+import sys
+import types
 
 
 def test_services_import():
@@ -52,15 +54,45 @@ def test_run_legacy_backend_invokes_app_run(monkeypatch):
     assert called["kwargs"]["use_reloader"] is False
 
 
+def test_backend_server_run_backend(monkeypatch, tmp_path):
+    from vulcan.services import backend_server
+
+    called = {}
+
+    class _FakeStream:
+        def reconfigure(self, **kwargs):
+            called.setdefault("reconfigure", []).append(kwargs)
+
+    class _FakeApp:
+        def run(self, **kwargs):
+            called["run"] = kwargs
+
+    fake_module = types.SimpleNamespace(app=_FakeApp())
+    monkeypatch.setitem(sys.modules, "vulcan.services.backend_server_app", fake_module)
+    monkeypatch.setattr(backend_server.os, "chdir", lambda p: called.setdefault("chdir", str(p)))
+    monkeypatch.setattr(backend_server.sys, "stdout", _FakeStream())
+    monkeypatch.setattr(backend_server.sys, "stderr", _FakeStream())
+    monkeypatch.delenv("PYTHONUNBUFFERED", raising=False)
+
+    backend_server.run_backend()
+
+    assert called["chdir"]
+    assert backend_server.os.environ["PYTHONUNBUFFERED"] == "1"
+    assert called["run"]["host"] == "0.0.0.0"
+    assert called["run"]["port"] == 5000
+    assert called["run"]["debug"] is True
+    assert called["run"]["use_reloader"] is False
+
+
 @pytest.mark.parametrize(
     "status,is_validation,expected",
     [
-        ("pending", False, "Pending"),
-        ("running", False, "Training in progress"),
-        ("running", True, "Validation in progress"),
-        ("completed", False, "Completed"),
-        ("failed", False, "Failed"),
-        ("unknown", False, "Unknown status"),
+        ("pending", False, "EN"),
+        ("running", False, "EN"),
+        ("running", True, "EN"),
+        ("completed", False, "EN"),
+        ("failed", False, "EN"),
+        ("unknown", False, "EN"),
     ],
 )
 def test_get_status_description(status, is_validation, expected):
@@ -72,11 +104,11 @@ def test_get_status_description(status, is_validation, expected):
 @pytest.mark.parametrize(
     "status,expected",
     [
-        ("pending", "Validation pending"),
-        ("running", "Validation in progress"),
-        ("completed", "Validation completed"),
-        ("failed", "Validation failed"),
-        ("unknown", "Unknown status"),
+        ("pending", "EN"),
+        ("running", "EN"),
+        ("completed", "EN"),
+        ("failed", "EN"),
+        ("unknown", "EN"),
     ],
 )
 def test_get_validation_status_description(status, expected):
@@ -95,7 +127,7 @@ def test_generate_performance_summary_contains_comparison():
     assert "training" in summary and "validation" in summary and "comparison" in summary
     assert summary["training"]["accuracy"]["value"] == 0.9
     assert summary["validation"]["accuracy"]["value"] == 0.82
-    assert summary["comparison"]["accuracy_diff"]["interpretation"] in {"better", "overfitting", "normal"}
+    assert summary["comparison"]["accuracy_diff"]["interpretation"] in {"better", "overfitting", "normal", "EN"}
 
 
 def test_generate_final_results_summary_recommendations():
@@ -231,7 +263,7 @@ def test_get_training_status_running(monkeypatch):
     assert payload["success"] is True
     assert payload["status"] == "running"
     assert payload["log_count"] == 2
-    assert payload["status_description"] == "Training in progress"
+    assert payload["status_description"] == "EN"
     assert payload["training_metrics"]["accuracy"] == 0.8
     assert payload["validation_metrics"] == {}
 
@@ -389,7 +421,7 @@ def test_get_optimization_status_and_logs(monkeypatch):
 
         @staticmethod
         def get_duration():
-            return "10m0s"
+            return "10 minutes 0 seconds"
 
         @staticmethod
         def get_full_logs():
@@ -679,3 +711,289 @@ def test_start_validation_with_config_success(tmp_path, monkeypatch):
     assert payload["config_name"] == "demo"
     assert payload["task_type"] == "validation"
     assert started["started"] is True
+
+
+def test_paper_search_start_status_logs(monkeypatch):
+    from datetime import datetime
+    from vulcan.services import backend_server_app as app_module
+
+    started = {}
+
+    class _FakePaperJob:
+        def __init__(self, job_id, search_query, year_from, top_k):
+            self.job_id = job_id
+            self.search_query = search_query
+            self.year_from = year_from
+            self.top_k = top_k
+            self.status = "pending"
+            self.status_description = "EN"
+            self.start_time = datetime.now()
+            self.duration = None
+            self.progress = 0
+            self.papers = [{"title": "T1"}]
+            self.logs = ["log1", "log2"]
+
+    class _FakeThread:
+        def __init__(self, target=None, args=(), daemon=None):
+            started["target"] = target
+            started["args"] = args
+            started["daemon"] = daemon
+
+        def start(self):
+            started["started"] = True
+
+    monkeypatch.setattr(app_module, "PaperSearchJob", _FakePaperJob)
+    monkeypatch.setattr(app_module.threading, "Thread", _FakeThread)
+    monkeypatch.setattr(app_module.uuid, "uuid4", lambda: "paper-1")
+
+    with app_module.app.test_request_context(
+        json={"search_query": "vuln", "year_from": 2024, "top_k": 3}
+    ):
+        start_resp = app_module.start_paper_search()
+    start_payload = start_resp.get_json()
+    assert start_payload["success"] is True
+    assert start_payload["job_id"] == "paper-1"
+    assert started["started"] is True
+
+    with app_module.app.app_context():
+        status_resp = app_module.get_paper_search_status("paper-1")
+        logs_resp = app_module.get_paper_search_logs("paper-1")
+    status_payload = status_resp.get_json()
+    logs_payload = logs_resp.get_json()
+    assert status_payload["success"] is True
+    assert status_payload["search_query"] == "vuln"
+    assert status_payload["log_count"] == 2
+    assert logs_payload["success"] is True
+    assert logs_payload["logs"] == ["log1", "log2"]
+
+
+def test_paper_search_status_logs_not_found():
+    from vulcan.services import backend_server_app as app_module
+
+    with app_module.app.app_context():
+        status_resp, status_code = app_module.get_paper_search_status("missing-paper")
+        logs_resp, logs_code = app_module.get_paper_search_logs("missing-paper")
+
+    assert status_code == 404
+    assert status_resp.get_json()["success"] is False
+    assert logs_code == 404
+    assert logs_resp.get_json()["success"] is False
+
+
+def test_data_collection_start_status_logs(monkeypatch):
+    from datetime import datetime
+    from vulcan.services import backend_server_app as app_module
+
+    started = {}
+
+    class _FakeCollectionJob:
+        def __init__(self, job_id, collection_type="comprehensive"):
+            self.job_id = job_id
+            self.collection_type = collection_type
+            self.status = "completed"
+            self.status_description = "EN"
+            self.logs = ["a", "b"]
+            self.start_time = datetime.now()
+            self.end_time = None
+            self.duration = None
+            self.collection_results = {"success": True}
+            self.error = None
+
+        def get_recent_logs(self, count=50):
+            return self.logs[-count:]
+
+        def get_logs(self, limit=None):
+            return self.logs if limit is None else self.logs[-limit:]
+
+        def get_duration(self):
+            return "00:00:01"
+
+    class _FakeThread:
+        def __init__(self, target=None, args=(), daemon=None):
+            started["target"] = target
+            started["args"] = args
+            self.daemon = daemon
+
+        def start(self):
+            started["started"] = True
+
+    monkeypatch.setattr(app_module, "DataCollectionJob", _FakeCollectionJob)
+    monkeypatch.setattr(app_module.threading, "Thread", _FakeThread)
+    monkeypatch.setattr(app_module.uuid, "uuid4", lambda: "dc-1")
+
+    with app_module.app.test_request_context(json={"collection_type": "unit"}):
+        start_resp = app_module.start_data_collection()
+    start_payload = start_resp.get_json()
+    assert start_payload["success"] is True
+    assert start_payload["job_id"] == "dc-1"
+    assert started["started"] is True
+
+    with app_module.app.app_context():
+        status_resp = app_module.get_data_collection_status("dc-1")
+    with app_module.app.test_request_context("/api/data-collection-logs/dc-1?limit=1"):
+        logs_resp = app_module.get_data_collection_logs("dc-1")
+
+    status_payload = status_resp.get_json()
+    logs_payload = logs_resp.get_json()
+    assert status_payload["success"] is True
+    assert status_payload["status"] == "completed"
+    assert status_payload["collection_type"] == "unit"
+    assert logs_payload["success"] is True
+    assert logs_payload["logs"] == ["b"]
+
+
+def test_data_collection_status_logs_not_found():
+    from vulcan.services import backend_server_app as app_module
+
+    with app_module.app.app_context():
+        status_resp, status_code = app_module.get_data_collection_status("missing-dc")
+    with app_module.app.test_request_context():
+        logs_resp, logs_code = app_module.get_data_collection_logs("missing-dc")
+
+    assert status_code == 404
+    assert status_resp.get_json()["success"] is False
+    assert logs_code == 404
+    assert logs_resp.get_json()["success"] is False
+
+
+def test_get_papers_success_and_not_found(monkeypatch):
+    from vulcan.services import backend_server_app as app_module
+
+    class _Job:
+        papers = [{"title": "P1"}, {"title": "P2"}]
+
+    monkeypatch.setitem(app_module.jobs, "paper-job-1", _Job())
+    with app_module.app.app_context():
+        ok_resp = app_module.get_papers("paper-job-1")
+        miss_resp, miss_code = app_module.get_papers("missing-paper-job")
+
+    ok_payload = ok_resp.get_json()
+    miss_payload = miss_resp.get_json()
+    assert ok_payload["success"] is True
+    assert len(ok_payload["papers"]) == 2
+    assert miss_code == 404
+    assert miss_payload["success"] is False
+
+
+def test_get_data_collection_results_paths(monkeypatch):
+    from vulcan.services import backend_server_app as app_module
+
+    class _CompletedJob:
+        status = "completed"
+        collection_results = {"success": True, "output_file": "x.json"}
+
+    class _RunningJob:
+        status = "running"
+        collection_results = {}
+
+    monkeypatch.setitem(app_module.jobs, "dc-completed", _CompletedJob())
+    monkeypatch.setitem(app_module.jobs, "dc-running", _RunningJob())
+
+    with app_module.app.app_context():
+        ok_resp = app_module.get_data_collection_results("dc-completed")
+        running_resp, running_code = app_module.get_data_collection_results("dc-running")
+        miss_resp, miss_code = app_module.get_data_collection_results("dc-missing")
+
+    ok_payload = ok_resp.get_json()
+    running_payload = running_resp.get_json()
+    miss_payload = miss_resp.get_json()
+
+    assert ok_payload["success"] is True
+    assert ok_payload["results"]["success"] is True
+    assert running_code == 400
+    assert running_payload["success"] is False
+    assert miss_code == 404
+    assert miss_payload["success"] is False
+
+
+def test_run_paper_search_success_and_failure(monkeypatch):
+    import types
+    import sys
+    from vulcan.services import backend_server_app as app_module
+
+    class _Job:
+        def __init__(self):
+            self.status = "pending"
+            self.status_description = ""
+            self.search_query = "demo"
+            self.year_from = 2023
+            self.top_k = 2
+            self.papers = []
+            self.logs = []
+            self.start_time = None
+            self.end_time = None
+            self.duration = 0
+            self.progress = 0
+
+        def add_log(self, m):
+            self.logs.append(m)
+
+    class _Updater:
+        def semantic_search_papers(self, query, year_from, top_k):
+            return [{"title": "A"}, {"title": "B"}]
+
+    fake_module = types.SimpleNamespace(ResourceUpdater=_Updater)
+    monkeypatch.setitem(sys.modules, "resource_updater", fake_module)
+
+    job = _Job()
+    app_module.run_paper_search(job)
+    assert job.status == "completed"
+    assert job.progress == 100
+    assert len(job.papers) == 2
+
+    class _UpdaterFail:
+        def semantic_search_papers(self, query, year_from, top_k):
+            raise RuntimeError("boom")
+
+    monkeypatch.setitem(sys.modules, "resource_updater", types.SimpleNamespace(ResourceUpdater=_UpdaterFail))
+    job2 = _Job()
+    app_module.run_paper_search(job2)
+    assert job2.status == "failed"
+    assert "boom" in job2.status_description
+
+
+def test_run_data_collection_success_and_failure(monkeypatch):
+    import types
+    import sys
+    from vulcan.services import backend_server_app as app_module
+
+    class _Job:
+        def __init__(self):
+            self.status = "pending"
+            self.status_description = ""
+            self.collection_type = "unit"
+            self.logs = []
+            self.start_time = None
+            self.end_time = None
+            self.duration = 0
+            self.collection_results = {}
+            self.error = None
+
+        def add_log(self, m):
+            self.logs.append(m)
+
+    class _Collector:
+        def __init__(self, collection_type):
+            self.collection_type = collection_type
+
+        def collect_sample_data(self):
+            return {"success": True, "stats": {"n": 1}, "output_file": "o.json"}
+
+    monkeypatch.setitem(sys.modules, "data_collector", types.SimpleNamespace(DataCollector=_Collector))
+    job = _Job()
+    app_module.run_data_collection(job)
+    assert job.status == "completed"
+    assert job.collection_results["success"] is True
+
+    class _CollectorFail:
+        def __init__(self, collection_type):
+            self.collection_type = collection_type
+
+        def collect_sample_data(self):
+            raise RuntimeError("collect-fail")
+
+    monkeypatch.setitem(sys.modules, "data_collector", types.SimpleNamespace(DataCollector=_CollectorFail))
+    job2 = _Job()
+    app_module.run_data_collection(job2)
+    assert job2.status == "failed"
+    assert "collect-fail" in (job2.error or "")

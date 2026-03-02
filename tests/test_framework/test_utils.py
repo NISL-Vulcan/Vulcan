@@ -1,8 +1,11 @@
 """Unit tests for vulcan.framework.utils.utils."""
+import numpy as np
+import scipy.sparse as sp
 import torch
 from torch import nn
 
 from vulcan.framework.config_templates import ConfigTemplate, ConfigTemplateManager
+from vulcan.framework.models.modules.GNN import utils as gnn_utils
 from vulcan.framework.utils.utils import (
     count_parameters,
     fix_seeds,
@@ -103,3 +106,120 @@ def test_config_template_manager_queries_and_generate():
 
     assert mgr.get_template("not_exists") is None
     assert mgr.generate_config("unknown_model") is None
+
+
+def test_gnn_parse_index_file_and_sample_mask(tmp_path):
+    idx_file = tmp_path / "idx.txt"
+    idx_file.write_text("1\n3\n5\n", encoding="utf-8")
+    idx = gnn_utils.parse_index_file(str(idx_file))
+    mask = gnn_utils.sample_mask(idx, 7)
+    assert idx == [1, 3, 5]
+    assert mask.dtype == np.bool_
+    assert mask.tolist() == [False, True, False, True, False, True, False]
+
+
+def test_gnn_preprocess_features_and_adj():
+    features = [
+        np.array([[1.0, 0.0], [0.0, 1.0]], dtype=float),
+        np.array([[1.0, 1.0]], dtype=float),
+    ]
+    f = gnn_utils.preprocess_features(features)
+    assert f.shape == (2, 2, 2)
+
+    adj = [np.array([[0.0, 1.0], [1.0, 0.0]]), np.array([[0.0]])]
+    a, m = gnn_utils.preprocess_adj(adj)
+    assert a.shape == (2, 2, 2)
+    assert m.shape == (2, 2, 1)
+    assert m[0, 0, 0] == 1.0 and m[1, 1, 0] == 0.0
+
+
+def test_gnn_sparse_to_tuple_and_normalize_adj():
+    mx = sp.coo_matrix(np.array([[0.0, 1.0], [1.0, 0.0]], dtype=float))
+    coords, values, shape = gnn_utils.sparse_to_tuple(mx)
+    assert shape == (2, 2)
+    assert coords.shape[1] == 2
+    assert len(values) == 2
+
+    norm = gnn_utils.normalize_adj(np.array([[0.0, 1.0], [1.0, 0.0]], dtype=float))
+    assert norm.shape == (2, 2)
+    assert np.isfinite(norm).all()
+
+
+def test_gnn_clean_and_remove_comments():
+    s = gnn_utils.clean_str("Hello, World!  ")
+    assert s == "hello , world !"
+    s2 = gnn_utils.clean_str_sst("A  B\tC")
+    assert s2 == "a b c"
+
+    py_src = '"""doc"""\n# cmt\nx = 1\n'
+    out_py = gnn_utils.remove_comments_and_docstrings(py_src, "python")
+    assert "doc" not in out_py
+    assert "# cmt" not in out_py
+    assert "x = 1" in out_py
+
+    c_src = "int a = 1; // cmt\nchar* s = \"//not-comment\";\n/*blk*/int b=2;"
+    out_c = gnn_utils.remove_comments_and_docstrings(c_src, "c")
+    assert "// cmt" not in out_c
+    assert "blk" not in out_c
+    assert '"//not-comment"' in out_c
+
+
+def test_gnn_tree_and_index_helpers():
+    class _Node:
+        def __init__(self, type_, children=None, start=(0, 0), end=(0, 1)):
+            self.type = type_
+            self.children = children or []
+            self.start_point = start
+            self.end_point = end
+
+    leaf_a = _Node("identifier", [], (0, 0), (0, 1))
+    leaf_comment = _Node("comment", [], (0, 2), (0, 3))
+    root = _Node("root", [leaf_a, leaf_comment], (0, 0), (0, 3))
+
+    idx = gnn_utils.tree_to_token_index(root)
+    assert idx == [((0, 0), (0, 1))]
+
+    idx_ved = gnn_utils.tree_to_token_index_ved(root)
+    assert idx_ved == [((0, 0), (0, 1), "identifier")]
+
+    mapping = {((0, 0), (0, 1)): ("identifier", "x")}
+    var_idx = gnn_utils.tree_to_variable_index(leaf_a, mapping)
+    assert var_idx == [((0, 0), (0, 1))]
+
+    token = gnn_utils.index_to_code_token(((0, 1), (1, 2)), ["abcd", "WXYZ"])
+    assert token == "bcdWX"
+
+
+def test_gnn_construct_feed_dict_and_chebyshev(monkeypatch):
+    placeholders = {
+        "labels": "L",
+        "features": "F",
+        "support": "S",
+        "mask": "M",
+        "num_features_nonzero": "N",
+    }
+    features = (None, np.zeros((3, 2)))
+    support = np.eye(3)
+    mask = np.ones((1, 3, 1))
+    labels = np.array([1, 0, 1])
+    feed = gnn_utils.construct_feed_dict(features, support, mask, labels, placeholders)
+    assert feed["L"] is labels
+    assert feed["F"] is features
+    assert feed["S"] is support
+    assert feed["M"] is mask
+    assert feed["N"] == (3, 2)
+
+    monkeypatch.setattr(gnn_utils, "normalize_adj", lambda adj: sp.eye(3))
+    monkeypatch.setattr(gnn_utils, "eigsh", lambda lap, k, which: (np.array([2.0]), None))
+    cheb = gnn_utils.chebyshev_polynomials(sp.eye(3), k=2)
+    assert isinstance(cheb, list)
+    assert len(cheb) == 3
+
+
+def test_gnn_load_word2vec(tmp_path):
+    w2v = tmp_path / "w2v.txt"
+    w2v.write_text("tok1 0.1 0.2\nbadline\ntok2 1 2 3\n", encoding="utf-8")
+    vocab, embd, mapping = gnn_utils.loadWord2Vec(str(w2v))
+    assert vocab == ["tok1", "tok2"]
+    assert len(embd) == 2
+    assert mapping["tok1"] == [0.1, 0.2]

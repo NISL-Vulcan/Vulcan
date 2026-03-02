@@ -33,3 +33,36 @@ def test_cpp_keywords_set():
     assert "return" in CPP_KEYWORDS
     assert "main" in MAIN_FUNCTIONS
     assert "argc" in MAIN_ARGUMENTS
+
+
+def test_clean_gadget_skips_multiline_comment_tail():
+    # A line ending with '*/' should be skipped entirely and not participate in string replacement or renaming
+    code = [
+        'printf("keep");',
+        "this is a comment test */",
+    ]
+    out = clean_gadget(code)
+    assert len(out) == 1
+    assert '""' in out[0]
+    assert "comment" not in out[0]
+
+
+def test_clean_gadget_renames_variables_and_skips_main_args():
+    code = [
+        "int a = 0;",
+        "a = a + b;",
+        "argc = a;",  # main argument name should be preserved
+    ]
+    out = clean_gadget(code)
+    text = " ".join(out)
+    # User variables should be replaced with VAR*
+    assert "VAR" in text
+    # main argument name should not be replaced
+    assert "argc" in text
+
+
+def test_clean_gadget_strips_non_ascii():
+    code = ['int x = 1;  // Comment contains non-ASCII characters']
+    out = clean_gadget(code)
+    # All non-ASCII characters should be removed
+    assert all(ord(ch) < 128 for ch in out[0])
