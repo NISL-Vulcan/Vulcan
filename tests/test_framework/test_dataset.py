@@ -1,5 +1,7 @@
 """Unit tests for vulcan.framework.dataset: get_dataset and config validation."""
+import importlib
 import json
+import sys
 import types
 
 import numpy as np
@@ -12,6 +14,8 @@ from vulcan.framework.dataset import get_dataset
 from vulcan.framework.datasets.test_source import test_source
 from vulcan.framework.datasets import vddata as vddata_mod
 from vulcan.framework.datasets import vdet_data as vdet_mod
+from vulcan.framework.datasets import linevul as linevul_mod
+from vulcan.framework.datasets import regvd as regvd_mod
 from vulcan.framework.datasets.vddata_utils.clean_gadget import clean_gadget as ds_clean_gadget
 from vulcan.framework.datasets.vddata_utils.vectorize_gadget import GadgetVectorizer
 
@@ -386,3 +390,394 @@ def test_gadget_vectorizer_add_vectorize_and_train(monkeypatch):
     assert vec_forward.shape == (50, 4)
     assert np.count_nonzero(vec_backward) > 0
     assert np.count_nonzero(vec_forward) > 0
+
+
+class _SimpleTokenizer:
+    cls_token = "<cls>"
+    sep_token = "<sep>"
+    pad_token_id = 0
+
+    def tokenize(self, text):
+        return str(text).split()
+
+    def convert_tokens_to_ids(self, tokens):
+        return [len(t) % 17 for t in tokens]
+
+
+class _WordLevelEncoded:
+    def __init__(self, ids):
+        self.ids = ids
+
+
+class _WordLevelTokenizer:
+    def encode(self, text):
+        return _WordLevelEncoded([3, 4, 5, 6])
+
+
+def test_linevul_convert_examples_normal_path():
+    tok = _SimpleTokenizer()
+    args = types.SimpleNamespace(use_word_level_tokenizer=False, block_size=8)
+    feat = linevul_mod.convert_examples_to_features("int a = 0 ;", 1, tok, args)
+    assert feat.label == 1
+    assert len(feat.input_ids) == 8
+    assert feat.input_tokens[0] == "<cls>"
+    assert feat.input_tokens[-1] == "<sep>"
+
+
+def test_linevul_convert_examples_word_level():
+    tok = _WordLevelTokenizer()
+    args = types.SimpleNamespace(use_word_level_tokenizer=True, block_size=512)
+    feat = linevul_mod.convert_examples_to_features("int a = 0 ;", 0, tok, args)
+    assert feat.label == 0
+    assert feat.input_ids[0] == 0
+    assert feat.input_ids[-1] == 1
+    assert len(feat.input_ids) == 512
+
+
+@pytest.mark.parametrize(
+    "fn_name,js,label_key",
+    [
+        ("convert_examples_to_features_draper", {"func": "int a = 0;", "idx": 1, "target": 1}, "target"),
+        ("convert_examples_to_features_reveal", {"code": "int b = 1;", "idx": 2, "target": 0}, "target"),
+        ("convert_examples_to_features_diverse", {"func": "int c = 2;", "idx": 3, "target": 1}, "target"),
+        ("convert_examples_to_features_d2a", {"code": "int d = 3;", "id": 4, "label": 0}, "label"),
+        ("convert_examples_to_features_MSR", {"processed_func": "int e = 4;", "index": 5, "target": 1}, "target"),
+        ("convert_examples_to_features", {"code": "int f = 5;", "label": 0}, "label"),
+        ("convert_examples_to_features_csv", {"Code": "int g = 6;", "id": 7, "isVulnerable": 1}, "isVulnerable"),
+    ],
+)
+def test_regvd_convert_examples_variants(fn_name, js, label_key):
+    tok = _SimpleTokenizer()
+    args = types.SimpleNamespace(block_size=10)
+    fn = getattr(regvd_mod, fn_name)
+    feat = fn(js, tok, args)
+    assert feat is not None
+    assert len(feat.input_ids) == 10
+    if label_key == "isVulnerable":
+        assert feat.label == int(js[label_key])
+    else:
+        assert feat.label == js[label_key]
+
+
+def _import_devign_partial_with_stubs(monkeypatch):
+    fake_tg = types.ModuleType("torch_geometric")
+    fake_tg_data = types.ModuleType("torch_geometric.data")
+    fake_tg_data.DataLoader = object
+    monkeypatch.setitem(sys.modules, "torch_geometric", fake_tg)
+    monkeypatch.setitem(sys.modules, "torch_geometric.data", fake_tg_data)
+    module = importlib.import_module("vulcan.framework.datasets.devign_partial")
+    return importlib.reload(module)
+
+
+def test_devign_partial_get_ratio():
+    from _pytest.monkeypatch import MonkeyPatch
+
+    with MonkeyPatch.context() as mp:
+        devign_partial_mod = _import_devign_partial_with_stubs(mp)
+
+        data = list(range(10))
+        got = devign_partial_mod.get_ratio(data, 0.3)
+        assert got == [0, 1, 2]
+
+
+def test_devign_partial_load_applies_ratio(monkeypatch):
+    devign_partial_mod = _import_devign_partial_with_stubs(monkeypatch)
+
+    class _DF:
+        def __init__(self):
+            self.memory_called = False
+
+        def info(self, memory_usage=None):
+            self.memory_called = memory_usage == "deep"
+
+        def __len__(self):
+            return 1
+
+        def __getitem__(self, item):
+            return ["ok"][:item.stop]
+
+    df = _DF()
+    monkeypatch.setattr(devign_partial_mod.pd, "read_pickle", lambda _: df)
+    got = devign_partial_mod.load("/tmp", "demo.pkl", ratio=0.5)
+    assert got == []
+    assert df.memory_called is True
+
+
+def test_devign_partial_loads_concat(monkeypatch):
+    devign_partial_mod = _import_devign_partial_with_stubs(monkeypatch)
+
+    df1 = pd.DataFrame({"input": ["a"], "target": [0]})
+    df2 = pd.DataFrame({"input": ["b"], "target": [1]})
+    monkeypatch.setattr(devign_partial_mod, "listdir", lambda _: ["b.pkl", "a.pkl"])
+    monkeypatch.setattr(devign_partial_mod, "isfile", lambda _: True)
+    monkeypatch.setattr(
+        devign_partial_mod,
+        "load",
+        lambda _path, name: df1 if name == "a.pkl" else df2,
+    )
+    got = devign_partial_mod.loads("/tmp/demo", ratio=1)
+    assert len(got) == 2
+    assert set(got["input"]) == {"a", "b"}
+
+
+def test_devign_partial_train_val_test_split_balanced():
+    from _pytest.monkeypatch import MonkeyPatch
+
+    with MonkeyPatch.context() as mp:
+        devign_partial_mod = _import_devign_partial_with_stubs(mp)
+
+        df = pd.DataFrame(
+            {
+                "input": [f"code-{i}" for i in range(20)],
+                "target": [0] * 10 + [1] * 10,
+            }
+        )
+        train, test, val = devign_partial_mod.train_val_test_split(df, shuffle=False)
+        assert len(train) == 16
+        assert len(test) == 2
+        assert len(val) == 2
+        assert set(train["target"].unique()) == {0, 1}
+        assert set(test["target"].unique()) == {0, 1}
+        assert set(val["target"].unique()) == {0, 1}
+
+
+def test_codexglue_convert_examples_and_set_seed():
+    import vulcan.framework.datasets.CodeXGLUE as codexglue_mod
+
+    tok = _SimpleTokenizer()
+    args = types.SimpleNamespace(block_size=9)
+    js = {"func": "int main ( ) { return 0 ; }", "idx": 9, "target": 1}
+    feat = codexglue_mod.convert_examples_to_features(js, tok, args)
+    assert feat.idx == "9"
+    assert feat.label == 1
+    assert len(feat.input_ids) == 9
+
+    codexglue_mod.set_seed(123)
+    assert codexglue_mod.os.environ["PYHTONHASHSEED"] == "123"
+
+
+def test_codexglue_dataset_len_and_getitem(monkeypatch, tmp_path):
+    import vulcan.framework.datasets.CodeXGLUE as codexglue_mod
+
+    # Stub MODEL_CLASSES to avoid real transformers dependency and downloads
+    class _Cfg:
+        pass
+
+    class _StubTokenizer:
+        cls_token = "<cls>"
+        sep_token = "<sep>"
+        pad_token_id = 0
+
+        def tokenize(self, text):
+            return str(text).split()
+
+        def convert_tokens_to_ids(self, tokens):
+            return [len(t) % 13 for t in tokens]
+
+    class _TokClass:
+        @staticmethod
+        def from_pretrained(name, do_lower_case=None):
+            return _StubTokenizer()
+
+    monkeypatch.setattr(
+        codexglue_mod,
+        "MODEL_CLASSES",
+        {"dummy": (_Cfg, object, _TokClass)},
+    )
+
+    # Build a simple jsonl data file
+    data_file = tmp_path / "codex.jsonl"
+    rows = [
+        {"func": "int a() { return 0; }", "idx": 1, "target": 0},
+        {"func": "int b() { return 1; }", "idx": 2, "target": 1},
+    ]
+    data_file.write_text("\n".join(json.dumps(r) for r in rows), encoding="utf-8")
+
+    args = {
+        "train_data_file": str(data_file),
+        "eval_data_file": str(data_file),
+        "test_data_file": str(data_file),
+        "training_percent": 1.0,
+        "block_size": 16,
+    }
+
+    ds = codexglue_mod.CodeXGLUE(
+        root=str(tmp_path),
+        split="train",
+        tokenizer="dummy",
+        preprocess_format=None,
+        args=args,
+    )
+    assert len(ds) == 2
+
+    x0, y0 = ds[0]
+    assert torch.is_tensor(x0) and torch.is_tensor(y0)
+    assert tuple(x0.shape) == (16,)
+    assert y0.item() in (0, 1)
+
+def test_d2alb_trace_dataset_getitem(tmp_path):
+    from vulcan.framework.datasets.D2ALB import D2ALB_TraceDataset
+
+    csv_file = tmp_path / "trace.csv"
+    pd.DataFrame(
+        [{"id": 1, "trace": "t1", "label": 1}, {"id": 2, "trace": "t2", "label": 0}]
+    ).to_csv(csv_file, index=False)
+    args = types.SimpleNamespace(csv_file=str(csv_file))
+    ds = D2ALB_TraceDataset(root=str(tmp_path), split="train", tokenizer=None, preprocess_format=None, args=args)
+    assert len(ds) == 2
+    x, y = ds[0]
+    assert x["id"] == 1
+    assert x["trace"] == "t1"
+    assert y.item() == 1.0
+
+
+def test_d2alb_code_dataset_and_download(monkeypatch, tmp_path):
+    from vulcan.framework.datasets.D2ALB import D2ALB_CodeDataset
+
+    csv_file = tmp_path / "code.csv"
+    pd.DataFrame(
+        [
+            {
+                "id": 9,
+                "bug_url": "http://example.com",
+                "bug_function": "foo",
+                "functions": "bar",
+                "label": 1,
+            }
+        ]
+    ).to_csv(csv_file, index=False)
+    args = types.SimpleNamespace(csv_file=str(csv_file))
+    ds = D2ALB_CodeDataset(root=str(tmp_path), split="train", tokenizer=None, preprocess_format=None, args=args)
+    x, y = ds[0]
+    assert x["bug_function"] == "foo"
+    assert x["functions"] == "bar"
+    assert y.item() == 1.0
+
+    class _Resp:
+        text = "page-content"
+
+    monkeypatch.setattr("vulcan.framework.datasets.D2ALB.requests.get", lambda _: _Resp())
+    assert ds.download_bug_url("http://example.com") == "page-content"
+
+
+def test_d2alb_trace_code_and_function_dataset(tmp_path):
+    from vulcan.framework.datasets.D2ALB import D2ALB_TraceCodeDataset, D2ALB_FunctionDataset
+
+    common = [
+        {
+            "id": 11,
+            "bug_url": "u",
+            "bug_function": "bf",
+            "functions": "f1",
+            "trace": "tr",
+            "code": "int a=0;",
+            "label": 0,
+        }
+    ]
+    csv_file = tmp_path / "trace_code.csv"
+    pd.DataFrame(common).to_csv(csv_file, index=False)
+    args = types.SimpleNamespace(csv_file=str(csv_file))
+
+    ds_tc = D2ALB_TraceCodeDataset(root=str(tmp_path), split="train", tokenizer=None, preprocess_format=None, args=args)
+    x_tc, y_tc = ds_tc[0]
+    assert x_tc["trace"] == "tr"
+    assert x_tc["bug_url"] == "u"
+    assert y_tc.item() == 0.0
+
+    ds_fn = D2ALB_FunctionDataset(root=str(tmp_path), split="train", tokenizer=None, preprocess_format=None, args=args)
+    x_fn, y_fn = ds_fn[0]
+    assert x_fn["code"] == "int a=0;"
+    assert y_fn.item() == 0.0
+
+
+def _import_xfg_build_with_stubs(monkeypatch):
+    fake_tg = types.ModuleType("torch_geometric")
+    fake_tg_data = types.ModuleType("torch_geometric.data")
+
+    class _FakeData:
+        def __init__(self, x=None, edge_index=None):
+            self.x = x
+            self.edge_index = edge_index
+
+        def pin_memory(self):
+            return self
+
+        def to(self, _device):
+            return self
+
+    class _FakeBatch:
+        @staticmethod
+        def from_data_list(graphs):
+            class _Obj:
+                def __init__(self, gs):
+                    self.graphs = gs
+
+                def pin_memory(self):
+                    return self
+
+                def to(self, _device):
+                    return self
+
+            return _Obj(graphs)
+
+    fake_tg_data.Data = _FakeData
+    fake_tg_data.Batch = _FakeBatch
+    monkeypatch.setitem(sys.modules, "torch_geometric", fake_tg)
+    monkeypatch.setitem(sys.modules, "torch_geometric.data", fake_tg_data)
+
+    module = importlib.import_module("vulcan.framework.datasets.XFGDataset_build")
+    return importlib.reload(module)
+
+
+def test_xfg_build_and_to_torch(monkeypatch):
+    xfg_mod = _import_xfg_build_with_stubs(monkeypatch)
+
+    import networkx as nx
+
+    g = nx.DiGraph()
+    g.add_node(1, code_sym_token=["a", "b"])
+    g.add_node(2, code_sym_token=["c"])
+    g.add_edge(1, 2, **{"c/d": "c"})
+    g.graph["label"] = 1
+
+    xfg = xfg_mod.XFG(xfg=g)
+    assert len(xfg.nodes) == 2
+    assert len(xfg.edges) == 1
+    assert xfg.label == 1
+
+    class _Vocab:
+        @staticmethod
+        def get_pad_id():
+            return 0
+
+        @staticmethod
+        def convert_tokens_to_ids(tokens):
+            return [len(t) for t in tokens]
+
+    data = xfg.to_torch(_Vocab(), max_len=4)
+    assert tuple(data.x.shape) == (2, 4)
+    assert tuple(data.edge_index.shape) == (2, 1)
+
+
+def test_xfgbatch_len_and_move(monkeypatch):
+    xfg_mod = _import_xfg_build_with_stubs(monkeypatch)
+
+    class _Graph:
+        def pin_memory(self):
+            return self
+
+        def to(self, _device):
+            return self
+
+    samples = [
+        types.SimpleNamespace(graph=_Graph(), label=1),
+        types.SimpleNamespace(graph=_Graph(), label=0),
+    ]
+    batch = xfg_mod.XFGBatch(samples)
+    assert len(batch) == 2
+    try:
+        batch.pin_memory()
+    except NotImplementedError:
+        # Some CPU-only/runtime combinations don't support tensor pinning.
+        pass
+    batch.move_to_device(torch.device("cpu"))
