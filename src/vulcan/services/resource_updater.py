@@ -7,9 +7,9 @@ class ResourceUpdater:
 
     def semantic_search_papers(self, query: str, year_from=2023, top_k=5) -> List[Dict[str, Any]]:
         """
-        用Semantic Scholar API检索最近真实存在的论文
+        ENSemantic Scholar APIEN
         """
-        print(f"[RAG检索] 正在检索与 '{query}' 相关的最新学术论文...")
+        print(f"[RAGEN] EN '{query}' EN...")
         url = "https://api.semanticscholar.org/graph/v1/paper/search"
         params = {
             "query": query,
@@ -31,17 +31,17 @@ class ResourceUpdater:
                             "authors": [a.get("name") for a in paper.get("authors", [])]
                         })
             else:
-                print("API请求失败:", resp.status_code, resp.text)
+                print("APIEN:", resp.status_code, resp.text)
                 return []
-            print(f"[RAG检索] 共检索到{len(results)}篇论文")
+            print(f"[RAGEN] EN{len(results)}EN")
             return results
         except Exception as e:
-            print(f"[RAG检索] 检索失败: {e}")
+            print(f"[RAGEN] EN: {e}")
             return []
 
     def extract_resources(self, paper_info: Dict[str, Any]) -> Dict[str, Any]:
-        print(f"[抽取] 正在分析文献: {paper_info['title']}")
-        # 用文献标题生成不同的资源链接（此处为示例）
+        print(f"[EN] EN: {paper_info['title']}")
+        # EN(EN)
         safe_title = paper_info['title'].replace(' ', '_').replace('/', '_')
         dataset_url = f"https://github.com/example/{safe_title}_dataset"
         model_url = f"https://github.com/example/{safe_title}_model"
@@ -51,7 +51,7 @@ class ResourceUpdater:
         }
 
     def validate_and_standardize(self, resource: Dict[str, Any]) -> bool:
-        print(f"[验证] 正在验证资源: {resource}")
+        print(f"[EN] EN: {resource}")
         return True
 
     def update_resources(self):
@@ -64,7 +64,7 @@ class ResourceUpdater:
         for query in queries:
             papers = self.semantic_search_papers(query)
             for paper in papers:
-                # 避免重复
+                # EN
                 if paper['title'] not in seen_titles:
                     seen_titles.add(paper['title'])
                     all_papers.append(paper)
@@ -75,9 +75,9 @@ class ResourceUpdater:
             print("Abstract:", paper['abstract'])
             resource = self.extract_resources(paper)
             if self.validate_and_standardize(resource):
-                print(f"[更新] 资源已更新并规范化: {resource}")
+                print(f"[EN] EN: {resource}")
             else:
-                print("[回退] 资源验证失败，回退检索...")
+                print("[EN] EN,EN...")
 
 if __name__ == "__main__":
     updater = ResourceUpdater()

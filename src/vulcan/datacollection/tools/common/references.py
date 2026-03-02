@@ -165,7 +165,7 @@ def print_commits_stats(fin):
     # iterate over the stats
     for n in np.sort(df['n_commits'].unique()):
         print(f"{n}\t\t{len(df[df['n_commits'] == n])}")
-    print(f"{LINE}\n👀 n security patches where\nperformed using y commits\n{LINE}\n")
+    print(f"{LINE}\n n security patches where\nperformed using y commits\n{LINE}\n")
     
     # get commits source
     sources = []

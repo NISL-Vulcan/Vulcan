@@ -4,16 +4,12 @@ import ast
 import inspect
 import os
 
-from CodeAnalysis.interfaces.base import CodeAnalyzerInterface
-
-from python_graphs import control_flow
-from python_graphs import control_flow_graphviz
-from python_graphs import program_utils
+from ..interfaces.base import CodeAnalyzerInterface
 
 class PythonAnalyzer(CodeAnalyzerInterface):
 
     def get_ast(self, file_path: str) -> object:
-        # 使用Python的AST库或其他工具实现
+        # Use Python AST or another parser implementation.
         with open(file_path, 'r') as file:
             source_code = file.read()
         
@@ -21,7 +17,7 @@ class PythonAnalyzer(CodeAnalyzerInterface):
         return tree
 
     def get_cfg(self, file_path: str) -> None:
-        # 实现Python的CFG分析
+        # Run Python CFG analysis.
         module = self._load_module_from_file(file_path)
         os.makedirs('out', exist_ok=True)
 
@@ -39,12 +35,16 @@ class PythonAnalyzer(CodeAnalyzerInterface):
         return module
 
     def _plot_control_flow_graph(self, fn, path):
+        from python_graphs import control_flow
+        from python_graphs import control_flow_graphviz
+        from python_graphs import program_utils
+
         graph = control_flow.get_control_flow_graph(fn)
         source = program_utils.getsource(fn)
         control_flow_graphviz.render(graph, include_src=source, path=path)
 
     def get_pg(self, file_path: str) -> None:
-        # 实现Python的PDG分析
+        # Run Python PDG analysis.
         module = self._load_module_from_file(file_path)
         os.makedirs('out', exist_ok=True)
 

@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 """
-数据收集API端点
+ENAPIEN
 """
 
 import threading
@@ -17,20 +17,20 @@ from vulcan.datacollection.data_collector import DataCollector
 app = Flask(__name__)
 CORS(app)
 
-# 配置日志
+# EN
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
-# 全局变量存储数据收集任务
+# EN
 jobs = {}
 
 class DataCollectionJob:
-    """数据收集任务类"""
+    """EN"""
     def __init__(self, job_id: str, collection_type: str = "comprehensive"):
         self.job_id = job_id
         self.collection_type = collection_type
         self.status = "pending"  # pending, running, completed, failed
-        self.status_description = "等待启动"
+        self.status_description = "EN"
         self.logs = []
         self.start_time = None
         self.end_time = None
@@ -39,72 +39,72 @@ class DataCollectionJob:
         self.error = None
     
     def add_log(self, message: str):
-        """添加日志"""
+        """EN"""
         timestamp = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
         log_entry = f"[{timestamp}] {message}"
         self.logs.append(log_entry)
         
-        # 限制日志数量
+        # EN
         if len(self.logs) > 1000:
             self.logs = self.logs[-500:]
     
     def get_logs(self, limit: int = None) -> list:
-        """获取日志"""
+        """EN"""
         if limit:
             return self.logs[-limit:]
         return self.logs
     
     def get_recent_logs(self, count: int = 50) -> list:
-        """获取最近的日志"""
+        """EN"""
         return self.logs[-count:]
     
     def get_duration(self) -> str:
-        """获取任务持续时间"""
+        """EN"""
         if not self.start_time:
-            return "未开始"
+            return "EN"
         if not self.end_time:
             end_time = datetime.now()
         else:
             end_time = self.end_time
         
         duration = end_time - self.start_time
-        return str(duration).split('.')[0]  # 移除微秒部分
+        return str(duration).split('.')[0]  # EN
 
 def run_data_collection(job: DataCollectionJob):
-    """运行数据收集任务"""
+    """EN"""
     try:
         job.status = "running"
-        job.status_description = "正在收集数据"
+        job.status_description = "EN"
         job.start_time = datetime.now()
-        job.add_log("🚀 开始数据收集任务")
+        job.add_log(" EN")
         
-        job.add_log("📦 初始化数据收集器...")
+        job.add_log(" EN...")
         collector = DataCollector(job.collection_type)
         
-        job.add_log("🔍 开始执行数据收集...")
+        job.add_log(" EN...")
         
-        # 执行数据收集
+        # EN
         result = collector.collect_sample_data()
         
         if result["success"]:
             job.status = "completed"
-            job.status_description = "数据收集完成"
+            job.status_description = "EN"
             job.collection_results = result
-            job.add_log("✅ 数据收集任务完成")
-            job.add_log(f"📊 收集统计: {result['stats']}")
-            job.add_log(f"📁 输出文件: {result['output_file']}")
+            job.add_log(" EN")
+            job.add_log(f" EN: {result['stats']}")
+            job.add_log(f" EN: {result['output_file']}")
         else:
             job.status = "failed"
-            job.status_description = "数据收集失败"
-            job.error = "数据收集执行失败"
-            job.add_log("❌ 数据收集任务失败")
+            job.status_description = "EN"
+            job.error = "EN"
+            job.add_log(" EN")
             
     except Exception as e:
         job.status = "failed"
-        job.status_description = f"数据收集出错: {str(e)}"
+        job.status_description = f"EN: {str(e)}"
         job.error = str(e)
-        job.add_log(f"❌ 数据收集异常: {str(e)}")
-        logger.error(f"数据收集任务异常: {e}")
+        job.add_log(f" EN: {str(e)}")
+        logger.error(f"EN: {e}")
         traceback.print_exc()
     
     finally:
@@ -114,34 +114,34 @@ def run_data_collection(job: DataCollectionJob):
 
 @app.route('/api/start-data-collection', methods=['POST'])
 def start_data_collection():
-    """启动数据收集任务"""
+    """EN"""
     try:
         data = request.get_json()
         collection_type = data.get('collection_type', 'comprehensive')
         
-        # 生成任务ID
+        # ENID
         job_id = str(uuid.uuid4())
         
-        # 创建数据收集任务
+        # EN
         job = DataCollectionJob(job_id, collection_type)
         jobs[job_id] = job
         
-        # 在后台线程中运行数据收集
+        # EN
         thread = threading.Thread(target=run_data_collection, args=(job,))
         thread.daemon = True
         thread.start()
         
-        logger.info(f"数据收集任务已启动: {job_id}")
+        logger.info(f"EN: {job_id}")
         
         return jsonify({
             "success": True,
             "job_id": job_id,
-            "message": f"数据收集任务已启动，任务ID: {job_id}",
+            "message": f"EN,ENID: {job_id}",
             "collection_type": collection_type
         })
         
     except Exception as e:
-        logger.error(f"启动数据收集失败: {e}")
+        logger.error(f"EN: {e}")
         return jsonify({
             "success": False,
             "error": str(e)
@@ -149,17 +149,17 @@ def start_data_collection():
 
 @app.route('/api/data-collection-status/<job_id>', methods=['GET'])
 def get_data_collection_status(job_id: str):
-    """获取数据收集状态"""
+    """EN"""
     try:
         if job_id not in jobs:
             return jsonify({
                 "success": False,
-                "error": "数据收集任务不存在"
+                "error": "EN"
             }), 404
         
         job = jobs[job_id]
         
-        # 获取最近的日志
+        # EN
         recent_logs = job.get_recent_logs(20)
         
         response_data = {
@@ -175,18 +175,18 @@ def get_data_collection_status(job_id: str):
             "collection_type": job.collection_type
         }
         
-        # 如果任务完成，添加结果信息
+        # EN,EN
         if job.status == "completed" and job.collection_results:
             response_data["collection_results"] = job.collection_results
         
-        # 如果任务失败，添加错误信息
+        # EN,EN
         if job.status == "failed" and job.error:
             response_data["error"] = job.error
         
         return jsonify(response_data)
         
     except Exception as e:
-        logger.error(f"获取数据收集状态失败: {e}")
+        logger.error(f"EN: {e}")
         return jsonify({
             "success": False,
             "error": str(e)
@@ -194,17 +194,17 @@ def get_data_collection_status(job_id: str):
 
 @app.route('/api/data-collection-logs/<job_id>', methods=['GET'])
 def get_data_collection_logs(job_id: str):
-    """获取数据收集日志"""
+    """EN"""
     try:
         if job_id not in jobs:
             return jsonify({
                 "success": False,
-                "error": "数据收集任务不存在"
+                "error": "EN"
             }), 404
         
         job = jobs[job_id]
         
-        # 获取查询参数
+        # EN
         limit = request.args.get('limit', type=int)
         
         logs = job.get_logs(limit)
@@ -217,7 +217,7 @@ def get_data_collection_logs(job_id: str):
         })
         
     except Exception as e:
-        logger.error(f"获取数据收集日志失败: {e}")
+        logger.error(f"EN: {e}")
         return jsonify({
             "success": False,
             "error": str(e)
@@ -225,7 +225,7 @@ def get_data_collection_logs(job_id: str):
 
 @app.route('/api/health', methods=['GET'])
 def health_check():
-    """健康检查"""
+    """EN"""
     return jsonify({
         "status": "healthy",
         "service": "data-collection-api",
@@ -233,12 +233,12 @@ def health_check():
     })
 
 if __name__ == '__main__':
-    print("🚀 数据收集API服务启动...")
-    print("📋 可用API接口:")
-    print("  POST /api/start-data-collection     - 启动数据收集")
-    print("  GET  /api/data-collection-status/<job_id> - 获取数据收集状态")
-    print("  GET  /api/data-collection-logs/<job_id>   - 获取数据收集日志")
-    print("  GET  /api/health                    - 健康检查")
+    print(" ENAPIEN...")
+    print(" ENAPIEN:")
+    print("  POST /api/start-data-collection     - EN")
+    print("  GET  /api/data-collection-status/<job_id> - EN")
+    print("  GET  /api/data-collection-logs/<job_id>   - EN")
+    print("  GET  /api/health                    - EN")
     print("=" * 60)
     
     app.run(host='0.0.0.0', port=5001, debug=True, use_reloader=False) 

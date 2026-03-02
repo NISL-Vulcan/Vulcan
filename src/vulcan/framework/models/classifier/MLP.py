@@ -25,10 +25,10 @@ class MLP(nn.Module):
 if __name__ == '__main__':
     class MLPForVulnerabilityDetection:
         def __init__(self, input_size, hidden_layers=[128, 64], output_size=1, dropout_rate=0.5, lr=0.001, weight_decay=1e-5):
+            self.device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
             self.model = MLP(input_size, hidden_layers, output_size, dropout_rate).to(self.device)
             self.criterion = nn.BCEWithLogitsLoss()
             self.optimizer = optim.Adam(self.model.parameters(), lr=lr, weight_decay=weight_decay)
-            self.device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 
         def train(self, train_loader, valid_loader, epochs=50, early_stopping_rounds=10):
             self.model.to(self.device)

@@ -1,9 +1,10 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 """
-薄封装：后端服务启动入口。
+Thin wrapper: backend service entrypoint.
 
-核心实现位于 `src/vulcan/services/backend_server_app.py`，建议通过 console script `vulcan-backend` 启动。
+Core implementation is in `src/vulcan/services/backend_server_app.py`.
+Preferred startup: console script `vulcan-backend`.
 """
 
 from __future__ import annotations

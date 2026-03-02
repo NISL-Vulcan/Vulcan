@@ -53,7 +53,7 @@ def ordered_load(stream, Loader=yaml.SafeLoader, object_pairs_hook=OrderedDict):
 
 
 def main(cfg, gpu, save_dir: Path):
-    """benchmark 主逻辑。"""
+    """Main benchmark logic."""
     start = time.time()
 
     num_workers = mp.cpu_count()
@@ -152,7 +152,7 @@ def main(cfg, gpu, save_dir: Path):
 
 
 def cli_main():
-    """命令行入口：解析配置并执行 benchmark。"""
+    """CLI entrypoint: parse config and run benchmark."""
     parser = argparse.ArgumentParser()
     parser.add_argument('--cfg', type=str, default='configs/custom.yaml', help='Configuration file to use')
     args = parser.parse_args()

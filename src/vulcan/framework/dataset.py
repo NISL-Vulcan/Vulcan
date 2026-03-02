@@ -12,7 +12,7 @@ from vulcan.framework.preprocess import get_preprocess
 
 
 _DATASET_LOADERS: Dict[str, Tuple[str, str]] = {
-    # 图数据集
+    # Graph datasets
     "ReGVD": ("vulcan.framework.datasets.regvd", "ReGVD"),
     "Devign_Partial": ("vulcan.framework.datasets.devign_partial", "Devign_Partial"),
     "CodeXGLUE": ("vulcan.framework.datasets.CodeXGLUE", "CodeXGLUE"),
@@ -20,7 +20,7 @@ _DATASET_LOADERS: Dict[str, Tuple[str, str]] = {
     "IVDDataset": ("vulcan.framework.datasets.IVDetect.IVDetectDataset", "IVDetectDataset"),
     "LineVul": ("vulcan.framework.datasets.linevul", "LineVul"),
     "vdet_data": ("vulcan.framework.datasets.vdet_data", "vdet_data"),
-    # 序列/向量数据集
+    # Sequence/vector datasets
     "VDdata": ("vulcan.framework.datasets.vddata", "VDdata"),
     "test_source": ("vulcan.framework.datasets.test_source", "test_source"),
 }
@@ -84,16 +84,16 @@ def graph_collate_fn(batch):
         from torch_geometric.data import Data
     except Exception as e:  # pragma: no cover
         raise RuntimeError(
-            "当前配置使用 geometric dataloader，但未安装 torch_geometric。"
-            "请先安装 PyG（torch-geometric/torch-scatter/torch-sparse/torch-cluster）后重试。"
+            "Current config uses the geometric dataloader, but torch_geometric is not installed. "
+            "Please install PyG (torch-geometric/torch-scatter/torch-sparse/torch-cluster) first."
         ) from e
 
-    # batch是一个列表，其中的元素是您的数据集__getitem__返回的数据
-    # 例如：[(input_x1, label1), (input_x2, label2), ...]
+    # batch is a list of items returned by dataset.__getitem__
+    # e.g. [(input_x1, label1), (input_x2, label2), ...]
     #print('print graph collate batch')
     #print(batch[0])
     #(Data(edge_index=[2, 172], x=[205, 101], y=[1]), tensor(1))
-    # 分解输入和标签
+    # Split inputs and labels
     try:
         input_xs = [item[0] for item in batch]
         labels = [item[1] for item in batch]
@@ -102,28 +102,28 @@ def graph_collate_fn(batch):
         print('Error in graph_collate_fn')
         for item in batch:
             print(item)
-    # 我们不能简单地堆叠input_xs，因为edge_index的大小是不同的
-    # 所以我们将其保留为一个列表
+    # We cannot stack input_xs directly because edge_index sizes differ.
+    # Keep them as a list.
     data_list = []
     # try:
     for input_x in input_xs:
         edge_index, *remaining_data = input_x
         # print(edge_index,type(edge_index))
         # print(remaining_data, type(remaining_data))
-        # 检查 edge_index 是否为 torch.Tensor，如果不是，则将其转换为 torch.Tensor
+        # Check whether edge_index is torch.Tensor; convert if needed.
         #if not isinstance(edge_index, torch.Tensor):
         #    edge_index = torch.tensor(edge_index, dtype=torch.long)
-        # 创建一个字典，其中 edge_index 是一个键，其余数据作为一个整体是另一个键
+        # Build a dict where edge_index and remaining payload are separated.
         data_dict = {"edge_index": edge_index[1], "my_data": remaining_data}
 
-        # 将这个字典转换为 Data 对象
+        # Convert dict to Data object.
         data_object = Data(**data_dict)
         data_list.append(data_object)
         #data_list.append(Data(my_data=data, edge_index=edge_index))
     # except:
     #     print(input_xs)
 
-    # labels是一个简单的tensor列表，我们可以直接堆叠它们
+    # labels is a simple tensor list; stack directly.
     labels = torch.stack(labels, dim=0)
     labels = labels.squeeze()
 

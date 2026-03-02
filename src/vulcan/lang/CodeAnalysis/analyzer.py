@@ -1,23 +1,28 @@
-# analyzer.py
+"""Factory for language-specific code analyzers."""
 
-from CodeAnalysis.implementations import python_impl#, java_impl
-from CodeAnalysis.implementations import c_impl, cpp_impl
-from CodeAnalysis.implementations import llvm_ir_impl
 
 class CodeAnalyzerFactory:
-
     @staticmethod
     def create_analyzer(language: str):
         if language == "python":
-            return python_impl.PythonAnalyzer()
+            from .implementations.python_impl import PythonAnalyzer
+
+            return PythonAnalyzer()
         elif language == "java":
-            return java_impl.JavaAnalyzer()
+            from .implementations.java_impl import JavaAnalyzer
+
+            return JavaAnalyzer()
         elif language == "c":
-            return c_impl.CAnalyzer()
+            from .implementations.c_impl import CAnalyzer
+
+            return CAnalyzer()
         elif language == "cpp":
-            return cpp_impl.CppAnalyzer()
-        elif language == "llvmir":#llvm 15
-            return llvm_impl.LLVMIRAnalyzer()
-        # ... 其他语言
+            from .implementations.cpp_impl import CppAnalyzer
+
+            return CppAnalyzer()
+        elif language == "llvmir":
+            from .implementations.llvm_ir_impl import LLVMIRAnalyzer
+
+            return LLVMIRAnalyzer()
         else:
             raise ValueError(f"No analyzer available for language: {language}")

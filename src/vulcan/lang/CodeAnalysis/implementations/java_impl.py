@@ -13,7 +13,7 @@ from program_graphs.adg import parse_java as parse_java_adg
 class JavaAnalyzer(CodeAnalyzerInterface):
 
     def get_ast(self, file_path: str) -> object:
-        #获取AST
+        # Get AST
         stream = FileStream(file_path, encoding="utf8")
         lexer = JavaLexer(stream)
         token_stream = CommonTokenStream(lexer)
@@ -24,14 +24,14 @@ class JavaAnalyzer(CodeAnalyzerInterface):
         return parse_tree
 
     def get_cfg(self, file_path: str) -> object:
-        # 实现CFG分析
+        # Run CFG analysis
         with open(file_path, 'r') as f:
             code = f.read()
         cfg = parse_java_cfg(code)
         return cfg
         
     def get_adg(self, code: str) -> object:
-        # 实现adg分析
+        # Run ADG analysis
         adg = parse_java_adg(code)
         return adg
 

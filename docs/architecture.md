@@ -1,18 +1,18 @@
-## Vulcan 架构与目录结构概览
+## Vulcan Architecture and Directory Overview
 
-本文件总结 Vulcan 项目的整体架构与目录结构，配合 `reconstruction_plan.md` 以及各阶段的 `phase*.md` 使用。
+This file summarizes the overall architecture and directory structure of the Vulcan project. Read it together with `reconstruction_plan.md` and the `phase*.md` documents.
 
-- 核心代码集中在 `src/vulcan/` 下，按领域分为：
-  - `vulcan.framework`：训练框架（模型、数据集、损失、优化器、表示等）；
-  - `vulcan.lang`：语言/代码解析与分析；
-  - `vulcan.datacollection`：数据/漏洞收集工具；
-  - `vulcan.cli`：训练/验证/benchmark/导出的命令行入口；
-  - `vulcan.services`：后端服务与 API 封装。
-- 顶层辅助目录：
-  - `tools/`：薄封装 CLI 脚本，调用 `vulcan.cli.*`；
-  - `scripts/`：启动/运维脚本，调用 `vulcan.services.*`；
-  - `tests/`：按包结构镜像划分的测试目录；
-  - `docs/`：用户与开发文档。
+- Core code is under `src/vulcan/`, organized by domain:
+  - `vulcan.framework`: training framework (models, datasets, losses, optimizers, representations, etc.).
+  - `vulcan.lang`: language and code parsing/analysis.
+  - `vulcan.datacollection`: data and vulnerability collection tools.
+  - `vulcan.cli`: command-line entry points for training/validation/benchmark/export.
+  - `vulcan.services`: backend services and API wrappers.
+- Top-level helper directories:
+  - `tools/`: thin CLI wrappers calling `vulcan.cli.*`.
+  - `scripts/`: startup/operations scripts calling `vulcan.services.*`.
+  - `tests/`: test directories mirroring package structure.
+  - `docs/`: user and developer documentation.
 
-更多细节（包括每个子模块的职责与迁移方案），可参考根目录的 `reconstruction_plan.md` 以及 `phase1.md` ~ `phase4.md`。 
+For more details (including module responsibilities and migration plans), refer to `reconstruction_plan.md` and `phase1.md` through `phase4.md` in the project root.
 

@@ -1,6 +1,7 @@
 import torch
+import torch.nn as nn
 import torch.nn.functional as F
-from torch_geometric.nn import RGCNConv
+from torch_geometric.nn import RGCNConv, global_mean_pool
 
 class CustomGraphConvolutionLayer(nn.Module):
     def __init__(self, in_features, out_features, num_relations, num_bases):
@@ -10,23 +11,22 @@ class CustomGraphConvolutionLayer(nn.Module):
         self.rgcn = RGCNConv(in_features, out_features, num_relations=num_relations, num_bases=num_bases)
 
     def forward(self, x, edge_index, edge_type, edge_attr):
-        # 更新边的嵌入
+        # Update edge embeddings
         edge_embeddings = self.edge_update(edge_attr)
 
-        # 更新节点的嵌入
+        # Update node embeddings
         x = self.node_update(x, edge_index, edge_type, edge_embeddings)
         return x, edge_embeddings
 
     def node_update(self, x, edge_index, edge_type, edge_embeddings):
-        # 使用RGCN卷积进行节点更新
+        # Update nodes with RGCN convolution
         x = self.rgcn(x, edge_index, edge_type)
         return x
 
     def edge_update(self, edge_attr):
-        # 根据您的描述，这里可以实现边的更新逻辑
-        # 例如使用基分解或其他适当的方法
-        # 这里需要根据具体的需求进行实现
-        return edge_attr  # 示例代码，实际实现需要更详细
+        # Implement edge update logic here, e.g., basis decomposition.
+        # This is a placeholder and should be refined for real usage.
+        return edge_attr  # Example only.
 
 class CustomGraphConvolutionLayer__(nn.Module):
     def __init__(self, in_features, out_features, num_relations):
@@ -50,7 +50,7 @@ class FSGNN(nn.Module):
         x, edge_index, edge_type, edge_attr = data.x, data.edge_index, data.edge_type, data.edge_attr
         x, edge_embeddings = self.graph_embedding_layer(x, edge_index, edge_type, edge_attr)
         x = F.relu(x)
-        x = global_mean_pool(x, data.batch)  # 池化
+        x = global_mean_pool(x, data.batch)  # Pooling
         x = self.fc(x)
         return x
 
@@ -65,26 +65,26 @@ def generate_synthetic_nodes(node_embeddings, labels, minority_class, num_synthe
 
     for _ in range(num_synthetic_nodes):
         node1, node2 = random.sample(list(minority_nodes), 2)
-        synthetic_node = (node1 + node2) / 2  # 简单地平均两个节点的嵌入
+        synthetic_node = (node1 + node2) / 2  # Simple average of two node embeddings
         synthetic_nodes.append(synthetic_node)
 
     return torch.stack(synthetic_nodes)
 
-# 假设有一定数量的合成节点要生成
+# Assume a fixed number of synthetic nodes to generate
 num_synthetic_nodes = 100
-minority_class = 1  # 假设易受攻击的类别标签为1
+minority_class = 1  # Assume vulnerable class label is 1
 
 for epoch in range(epochs):
     model.train()
 
-    # 生成合成节点
+    # Generate synthetic nodes
     synthetic_nodes = generate_synthetic_nodes(data.x, data.y, minority_class, num_synthetic_nodes)
     
-    # 添加合成节点到图数据中
-    # 这需要更复杂的逻辑来更新边索引和边属性
-    # 以下代码仅为示例
+    # Add synthetic nodes into graph data
+    # This requires additional logic for edge index/edge attributes.
+    # Code below is only an example.
     data.x = torch.cat((data.x, synthetic_nodes), dim=0)
-    # 还需要更新data.edge_index和data.edge_attr来反映新的连接
+    # data.edge_index and data.edge_attr also need updates for new connections
 
     optimizer.zero_grad()
     out = model(data)
@@ -96,7 +96,7 @@ for epoch in range(epochs):
 '''
 model = FSGNN(num_node_features, num_edge_features, num_relations, num_bases, hidden_dim, num_classes)
 optimizer = torch.optim.Adam(model.parameters(), lr=0.01)
-criterion = nn.CrossEntropyLoss()  # 或根据您的任务选择合适的损失函数
+criterion = nn.CrossEntropyLoss()  # Or choose a different loss based on your task
 
 for epoch in range(epochs):
     model.train()

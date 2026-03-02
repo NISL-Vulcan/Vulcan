@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 """
-完整诊断数据集优化问题
+Full diagnostics for dataset optimization issues.
 """
 
 import os
@@ -12,25 +12,25 @@ import time
 import json
 
 def check_backend_service():
-    """检查后端服务"""
-    print("🔍 1. 检查后端服务")
+    """Check backend service."""
+    print(" 1. Check backend service")
     print("-" * 30)
     
     try:
         response = requests.get("http://localhost:5000/api/health", timeout=5)
         if response.status_code == 200:
-            print("✅ 后端服务正常运行")
+            print(" Backend service is running")
             return True
         else:
-            print(f"❌ 后端服务异常，状态码: {response.status_code}")
+            print(f" Backend service unhealthy, status code: {response.status_code}")
             return False
     except Exception as e:
-        print(f"❌ 无法连接到后端服务: {e}")
+        print(f" Cannot connect to backend service: {e}")
         return False
 
 def check_files():
-    """检查必要文件"""
-    print("\n🔍 2. 检查必要文件")
+    """Check required files."""
+    print("\n 2. Check required files")
     print("-" * 30)
     
     files_to_check = [
@@ -44,120 +44,120 @@ def check_files():
     all_exist = True
     for file_path in files_to_check:
         if os.path.exists(file_path):
-            print(f"✅ {file_path}")
+            print(f" {file_path}")
         else:
-            print(f"❌ {file_path} - 不存在")
+            print(f" {file_path} - missing")
             all_exist = False
     
     return all_exist
 
 def test_optimization_script():
-    """测试优化脚本"""
-    print("\n🔍 3. 测试优化脚本")
+    """Test optimization script."""
+    print("\n 3. Test optimization script")
     print("-" * 30)
     
     try:
-        # 尝试导入脚本
+        # Try importing script
         import auto_update_and_dynamic_ratio
-        print("✅ 脚本导入成功")
+        print(" Script import succeeded")
         
-        # 尝试创建实例
+        # Try creating instance
         tuner = auto_update_and_dynamic_ratio.DynamicRatioTuner()
-        print("✅ 实例创建成功")
+        print(" Instance created successfully")
         
         return True
     except Exception as e:
-        print(f"❌ 脚本测试失败: {e}")
+        print(f" Script test failed: {e}")
         import traceback
         traceback.print_exc()
         return False
 
 def test_api_endpoints():
-    """测试API端点"""
-    print("\n🔍 4. 测试API端点")
+    """Test API endpoints."""
+    print("\n 4. Test API endpoints")
     print("-" * 30)
     
     try:
-        # 测试启动优化API
-        print("测试启动优化API...")
+        # Test start optimization API
+        print("Testing optimization start API...")
         response = requests.post(
             "http://localhost:5000/api/start-dataset-optimization",
-            json={"max_iterations": 1},  # 只测试1次迭代
+            json={"max_iterations": 1},  # test only 1 iteration
             timeout=10
         )
         
-        print(f"状态码: {response.status_code}")
+        print(f"Status code: {response.status_code}")
         
         if response.status_code == 200:
             result = response.json()
-            print(f"响应: {json.dumps(result, indent=2, ensure_ascii=False)}")
+            print(f"Response: {json.dumps(result, indent=2, ensure_ascii=False)}")
             
             if result.get("success"):
                 job_id = result["job_id"]
-                print(f"✅ 优化任务启动成功，任务ID: {job_id}")
+                print(f" Optimization job started successfully, job ID: {job_id}")
                 
-                # 测试状态查询
-                print("\n测试状态查询API...")
+                # Test status API
+                print("\nTesting status API...")
                 status_response = requests.get(f"http://localhost:5000/api/optimization-status/{job_id}", timeout=5)
                 
                 if status_response.status_code == 200:
                     status_result = status_response.json()
-                    print(f"状态查询成功: {json.dumps(status_result, indent=2, ensure_ascii=False)}")
+                    print(f"Status query succeeded: {json.dumps(status_result, indent=2, ensure_ascii=False)}")
                     return True
                 else:
-                    print(f"❌ 状态查询失败，状态码: {status_response.status_code}")
+                    print(f" Status query failed, status code: {status_response.status_code}")
                     return False
             else:
-                print(f"❌ 启动优化失败: {result.get('error')}")
+                print(f" Failed to start optimization: {result.get('error')}")
                 return False
         else:
-            print(f"❌ 启动优化API失败，状态码: {response.status_code}")
+            print(f" Optimization start API failed, status code: {response.status_code}")
             return False
             
     except Exception as e:
-        print(f"❌ API测试失败: {e}")
+        print(f" API test failed: {e}")
         return False
 
 def main():
-    """主诊断函数"""
-    print("🚀 开始诊断数据集优化问题")
+    """Main diagnostics entrypoint."""
+    print(" Start diagnosing dataset optimization issues")
     print("=" * 50)
     
-    # 1. 检查后端服务
+    # 1. Check backend service
     backend_ok = check_backend_service()
     
-    # 2. 检查文件
+    # 2. Check files
     files_ok = check_files()
     
-    # 3. 测试优化脚本
+    # 3. Test optimization script
     script_ok = test_optimization_script()
     
-    # 4. 测试API端点
+    # 4. Test API endpoints
     api_ok = False
     if backend_ok and files_ok and script_ok:
         api_ok = test_api_endpoints()
     
-    # 总结
-    print("\n📋 诊断结果")
+    # Summary
+    print("\n Diagnosis summary")
     print("=" * 50)
-    print(f"后端服务: {'✅ 正常' if backend_ok else '❌ 异常'}")
-    print(f"必要文件: {'✅ 完整' if files_ok else '❌ 缺失'}")
-    print(f"优化脚本: {'✅ 正常' if script_ok else '❌ 异常'}")
-    print(f"API端点: {'✅ 正常' if api_ok else '❌ 异常'}")
+    print(f"Backend service: {'OK' if backend_ok else 'FAILED'}")
+    print(f"Required files: {'COMPLETE' if files_ok else 'MISSING'}")
+    print(f"Optimization script: {'OK' if script_ok else 'FAILED'}")
+    print(f"API endpoints: {'OK' if api_ok else 'FAILED'}")
     
     if backend_ok and files_ok and script_ok and api_ok:
-        print("\n✅ 所有检查都通过，数据集优化功能应该正常工作")
-        print("如果前端仍然卡住，可能是前端代码问题")
+        print("\n All checks passed. Dataset optimization should work normally.")
+        print("If frontend still hangs, the issue is likely on frontend side.")
     else:
-        print("\n❌ 发现问题，需要修复")
+        print("\n Issues detected, fixes are required.")
         if not backend_ok:
-            print("- 请启动后端服务: python start_services.py")
+            print("- Start backend service: python start_services.py")
         if not files_ok:
-            print("- 请检查必要文件是否存在")
+            print("- Check whether required files exist")
         if not script_ok:
-            print("- 请检查优化脚本是否有错误")
+            print("- Check optimization script for runtime errors")
         if not api_ok:
-            print("- 请检查API端点配置")
+            print("- Check API endpoint configuration")
 
 if __name__ == "__main__":
     main() 

@@ -101,17 +101,17 @@ class Net(nn.Module):
 class Devign(nn.Module):
     def __init__(self, encoder, config, tokenizer, args):#model_config, loss_lambda):
         super(Devign, self).__init__()
-        # 初始化网络结构，这里使用一个假设的Net类，它需要根据具体情况定义
+        # Initialize network structure; this assumes Net matches your runtime setup.
         from types import SimpleNamespace
         #args = SimpleNamespace(**args)
         self.model = Net(**args)
         self.loss_lambda = 1.3e-6#loss_lambda
 
     def forward(self, x):
-        # 前向传播逻辑
+        # Forward pass
         output = self.model(x)
         return output
 
     def loss(self, output, target):
-        # 定义损失函数，这里用二元交叉熵和L1损失的组合
+        # Loss: binary cross-entropy + L1 regularization
         return F.binary_cross_entropy(output, target) + F.l1_loss(output, target) * self.loss_lambda

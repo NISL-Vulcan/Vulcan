@@ -1,5 +1,6 @@
 """
-按需惰性导入各个数据集，避免在导入 datasets 包时就加载所有重依赖（如 scipy、transformers 等）。
+Lazily import dataset modules on demand to avoid loading heavy optional dependencies
+(e.g., scipy and transformers) during package import.
 """
 
 from __future__ import annotations

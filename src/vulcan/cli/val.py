@@ -13,7 +13,7 @@ from vulcan.framework.model import get_model
 
 
 def convert_output(pred):
-    # 将一维预测转换为二维
+    # Convert 1D prediction to 2D probabilities.
     return torch.stack([1 - pred, pred], dim=1)
 
 
@@ -47,7 +47,7 @@ def evaluate(model, dataloader, device):
 
 
 def main(cfg):
-    """验证主逻辑。"""
+    """Main validation logic."""
     device = torch.device(cfg['DEVICE'])
 
     eval_cfg = cfg['EVAL']
@@ -83,7 +83,7 @@ def main(cfg):
 
 
 def cli_main():
-    """命令行入口：解析配置并执行验证。"""
+    """CLI entrypoint: parse config and run validation."""
     parser = argparse.ArgumentParser()
     parser.add_argument('--cfg', type=str, default='configs/custom.yaml')
     args = parser.parse_args()

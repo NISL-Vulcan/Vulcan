@@ -41,7 +41,11 @@ def configure_optimizers_alon(
 
 
 def segment_sizes_to_slices(sizes: Tensor) -> List:
-    cum_sums = numpy.cumsum(sizes.cpu())
+    if isinstance(sizes, torch.Tensor):
+        values = sizes.cpu()
+    else:
+        values = numpy.asarray(sizes)
+    cum_sums = numpy.cumsum(values)
     start_of_segments = numpy.append([0], cum_sums[:-1])
     return [
         slice(start, end) for start, end in zip(start_of_segments, cum_sums)

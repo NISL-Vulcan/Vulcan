@@ -1,6 +1,6 @@
 # NVD Tool
 
-🔗 [https://www.cvedetails.com/ data](https://nvd.nist.gov/vuln/data-feeds).
+ [https://www.cvedetails.com/ data](https://nvd.nist.gov/vuln/data-feeds).
 
 All the resulting datasets are available at `~/data/nvd/` (in case you want to check it). 
 

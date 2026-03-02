@@ -1,18 +1,15 @@
 # implementations/llvm-ir_impl.py
 
-from CodeAnalysis.interfaces.base import CodeAnalyzerInterface
-
-from antlr4 import CommonTokenStream, StdinStream, FileStream
-
-from CodeAnalysis.utils.llvmir_utils.antlr.gen.LLVMIRLexer import LLVMIRLexer
-from CodeAnalysis.utils.llvmir_utils.antlr.gen.LLVMIRParser import LLVMIRParser
-
-import programl as pg
+from ..interfaces.base import CodeAnalyzerInterface
     
 class LLVMIRAnalyzer(CodeAnalyzerInterface):
 
     def get_ast(self, file_path: str) -> object:
-        #获取AST
+        # Get AST
+        from antlr4 import CommonTokenStream, FileStream
+        from ..utils.llvmir_utils.antlr.gen.LLVMIRLexer import LLVMIRLexer
+        from ..utils.llvmir_utils.antlr.gen.LLVMIRParser import LLVMIRParser
+
         stream = FileStream(file_path, encoding="utf8")
         lexer = LLVMIRLexer(stream)
         token_stream = CommonTokenStream(lexer)
@@ -23,12 +20,14 @@ class LLVMIRAnalyzer(CodeAnalyzerInterface):
         return parse_tree
 
     def get_cfg(self, file_path: str) -> object:
-        # 实现CFG分析
+        # Run CFG analysis
         pass
 
         
     def get_pg(self, code: str) -> object:
-        # 实现PDG分析
+        # Run PDG analysis
+        import programl as pg
+
         G = pg.from_llvm_ir(code)
         dot_output = pg.to_dot(G)
         return dot_output

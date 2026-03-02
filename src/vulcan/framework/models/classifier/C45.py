@@ -31,7 +31,7 @@ class C45:
         return accuracy_score(y_true, y_pred.cpu().numpy())
 
 if __name__ == '__main__':
-    # 示例
+    # Example
     X_train = torch.rand((100, 30))
     y_train = (X_train.sum(dim=1) > 15).long()
     X_test = torch.rand((20, 30))

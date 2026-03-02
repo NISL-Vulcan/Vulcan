@@ -1,7 +1,7 @@
 """
 CLI entrypoints for Vulcan.
 
-本包用于承载训练、验证、benchmark、导出等命令行入口逻辑，
-顶层 `tools/*.py` 只保留极薄的封装，实际业务逻辑放在这里。
+This package contains CLI entry logic for training, validation, benchmarking,
+and export. Top-level `tools/*.py` files are kept as thin wrappers only.
 """
 

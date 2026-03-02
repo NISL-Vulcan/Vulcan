@@ -1,5 +1,6 @@
 """
-按需惰性导入各个模型，避免在导入 models 包时就加载所有重依赖（如 transformers、torch-geometric 等）。
+Lazily import model modules on demand to avoid loading heavy optional dependencies
+(e.g., transformers and torch-geometric) during package import.
 """
 
 from __future__ import annotations

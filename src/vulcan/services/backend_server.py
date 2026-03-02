@@ -1,7 +1,7 @@
 """
-后端服务启动封装。
+EN.
 
-通过 `vulcan.services.backend_server_app` 启动后端应用。
+EN `vulcan.services.backend_server_app` EN.
 """
 
 from __future__ import annotations
@@ -12,7 +12,7 @@ import sys
 
 
 def run_backend() -> None:
-    # 尽量复用原有脚本的行为：以仓库根目录作为工作目录，便于相对路径访问 configs/、tools/ 等。
+    # EN:EN,EN configs/,tools/ EN.
     repo_root = Path(__file__).resolve().parents[3]
     os.chdir(repo_root)
 

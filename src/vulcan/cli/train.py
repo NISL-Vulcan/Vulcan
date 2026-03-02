@@ -38,7 +38,7 @@ def ordered_load(stream, Loader=yaml.SafeLoader, object_pairs_hook=OrderedDict):
 
 
 def main(cfg, gpu, save_dir: Path):
-    """核心训练逻辑，供脚本和其他代码复用。"""
+    """Core training logic shared by CLI and other callers."""
     start = time.time()
     best_Acc = 0.0
 
@@ -140,7 +140,7 @@ def main(cfg, gpu, save_dir: Path):
 
 
 def cli_main():
-    """命令行入口：解析参数并运行训练。"""
+    """CLI entrypoint: parse args and run training."""
     parser = argparse.ArgumentParser()
     parser.add_argument(
         '--cfg',

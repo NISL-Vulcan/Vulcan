@@ -1,9 +1,9 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 """
-薄封装：数据集优化 API 服务入口。
+Thin wrapper: dataset optimization API service entrypoint.
 
-核心实现位于 `src/vulcan/services/dataset_optimization_api_app.py`。
+Core implementation is in `src/vulcan/services/dataset_optimization_api_app.py`.
 """
 
 from __future__ import annotations

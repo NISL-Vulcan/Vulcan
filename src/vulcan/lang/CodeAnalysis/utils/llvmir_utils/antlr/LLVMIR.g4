@@ -1,7 +1,7 @@
 /*
   MIT License
 
-  Copyright (c) 2023 邱维东
+  Copyright (c) 2023 Weidong Qiu
 
   Permission is hereby granted, free of charge, to any person obtaining a copy
   of this software and associated documentation files (the "Software"), to deal
@@ -943,7 +943,7 @@ floatKind:
 	| 'x86_fp80'
 	| 'fp128'
 	| 'ppc_fp128';
-/*看不懂，直接抄过来的 */
+/* Kept from upstream reference grammar. */
 specializedMDNode:
 	diBasicType
 	| diCommonBlock // not in spec as of 2019-12-05
@@ -1393,7 +1393,7 @@ fragment EscapeName:
 	EscapeLetter (EscapeLetter | DecimalDigit)*;
 fragment Id: Decimals;
 fragment IntHexLit: [us] '0x' HexDigit+;
-// 浮点型常量
+// Floating-point constants
 fragment Sign: [+-];
 fragment FracLit: Sign? Decimals '.' DecimalDigit*;
 fragment SciLit: FracLit [eE] Sign? Decimals;

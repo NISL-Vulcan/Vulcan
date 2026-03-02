@@ -1,6 +1,6 @@
 """
-测试包根目录。
+Root test package.
 
-当前仅用于提供包结构占位，实际测试用例将逐步补充到各子目录中。
+Currently used as a package placeholder; concrete test cases live in subdirectories.
 """
 

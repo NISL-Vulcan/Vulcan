@@ -1,13 +1,13 @@
 """
-后端 Flask 应用加载/启动入口（安装态友好）。
+EN Flask EN/EN(EN).
 
-说明：
-- 历史实现仍在仓库根目录的 `scripts/backend_server.py`，体量很大且包含全部路由与业务逻辑。
-- 为满足 `src/` 布局最佳实践，这里避免在包内直接导入仓库根目录脚本（那会依赖工作目录/源码树）。
-- 采用 runpy 加载 legacy 脚本，提取其中的 Flask `app` 并由包内统一启动。
+EN:
+- EN `scripts/backend_server.py`,EN.
+- EN `src/` EN,EN(EN/EN).
+- EN runpy EN legacy EN,EN Flask `app` EN.
 
-后续若要彻底“搬迁实现”，可以把 legacy 脚本内容逐步迁移到本模块/子模块中，
-并最终删除对 `scripts/backend_server.py` 的依赖。
+EN"EN",EN legacy EN/EN,
+EN `scripts/backend_server.py` EN.
 """
 
 from __future__ import annotations
@@ -34,7 +34,7 @@ def load_legacy_namespace(repo_root: Path | None = None) -> Mapping[str, Any]:
     if not script_path.exists():
         raise FileNotFoundError(f"cannot find legacy backend script at {script_path}")
 
-    # 确保 legacy 脚本在“仓库根目录语义”下工作（它大量使用相对路径）。
+    # EN legacy EN"EN"EN(EN).
     root = script_path.parent.parent
     prev_cwd = Path.cwd()
     try:
@@ -60,7 +60,7 @@ def run_legacy_backend(
     use_reloader: bool = False,
     repo_root: Path | None = None,
 ) -> None:
-    # 复用 legacy 的“实时输出”行为：尽可能禁用缓冲。
+    # EN legacy EN"EN"EN:EN.
     os.environ.setdefault("PYTHONUNBUFFERED", "1")
     if hasattr(sys.stdout, "reconfigure"):
         sys.stdout.reconfigure(line_buffering=True)

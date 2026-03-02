@@ -9,7 +9,7 @@ from torch import nn
 
 def setup_ddp() -> int:
     """
-    初始化分布式训练环境，并返回当前 GPU id。
+    Initialize distributed training and return current GPU id.
     """
     if 'RANK' in os.environ and 'WORLD_SIZE' in os.environ:
         rank = int(os.environ['RANK'])

@@ -1,8 +1,8 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 """
-vulcan-Detection 配置模板管理系统
-提供各种模型的配置模板和自动配置生成功能
+vulcan-Detection configuration template management.
+Provides model templates and automatic config generation.
 """
 
 import os
@@ -12,7 +12,7 @@ from pathlib import Path
 from datetime import datetime
 
 class ConfigTemplate:
-    """配置模板类"""
+    """Configuration template."""
     
     def __init__(self, name: str, template: Dict[str, Any], description: str = ""):
         self.name = name
@@ -20,17 +20,17 @@ class ConfigTemplate:
         self.description = description
     
     def generate_config(self, **kwargs) -> Dict[str, Any]:
-        """基于模板生成配置"""
+        """Generate config from template."""
         config = self._deep_copy_dict(self.template)
         
-        # 应用参数覆盖
+        # Apply overrides
         for key, value in kwargs.items():
             self._set_nested_value(config, key, value)
         
         return config
     
     def _deep_copy_dict(self, d: Dict) -> Dict:
-        """深拷贝字典"""
+        """Deep-copy a dictionary."""
         if isinstance(d, dict):
             return {k: self._deep_copy_dict(v) for k, v in d.items()}
         elif isinstance(d, list):
@@ -39,7 +39,7 @@ class ConfigTemplate:
             return d
     
     def _set_nested_value(self, config: Dict, key: str, value: Any):
-        """设置嵌套键值"""
+        """Set nested key value."""
         if '.' in key:
             keys = key.split('.')
             current = config
@@ -52,16 +52,16 @@ class ConfigTemplate:
             config[key] = value
 
 class ConfigTemplateManager:
-    """配置模板管理器"""
+    """Configuration template manager."""
     
     def __init__(self):
         self.templates = {}
         self._initialize_templates()
     
     def _initialize_templates(self):
-        """初始化所有模板"""
+        """Initialize all templates."""
         
-        # DeepWuKong 模板
+        # DeepWuKong template
         deepwukong_template = {
             'DEVICE': 'cuda',
             'SAVE_DIR': 'output',
@@ -140,7 +140,7 @@ class ConfigTemplateManager:
             }
         }
         
-        # GNNReGVD 模板  
+        # GNNReGVD template
         gnnregvd_template = {
             'DEVICE': 'cuda',
             'SAVE_DIR': 'output',
@@ -213,7 +213,7 @@ class ConfigTemplateManager:
             }
         }
         
-        # Devign 模板
+        # Devign template
         devign_template = {
             'DEVICE': 'cuda',
             'SAVE_DIR': 'output',
@@ -280,7 +280,7 @@ class ConfigTemplateManager:
             }
         }
         
-        # IVDetect 模板
+        # IVDetect template
         ivdetect_template = {
             'DEVICE': 'cuda',
             'SAVE_DIR': 'output',
@@ -339,7 +339,7 @@ class ConfigTemplateManager:
             }
         }
         
-        # LineVul 模板
+        # LineVul template
         linevul_template = {
             'DEVICE': 'cuda',
             'SAVE_DIR': 'output',
@@ -406,7 +406,7 @@ class ConfigTemplateManager:
             }
         }
         
-        # VulBERTa 模板
+        # VulBERTa template
         vulberta_template = {
             'DEVICE': 'cuda',
             'SAVE_DIR': 'output',
@@ -473,28 +473,28 @@ class ConfigTemplateManager:
             }
         }
         
-        # 注册所有模板
-        self.templates['deepwukong'] = ConfigTemplate('DeepWuKong', deepwukong_template, 'DeepWuKong 图神经网络漏洞检测模型')
-        self.templates['gnnregvd'] = ConfigTemplate('GNNReGVD', gnnregvd_template, 'GNN-based 回归漏洞检测模型')
-        self.templates['devign'] = ConfigTemplate('Devign', devign_template, 'Devign 图嵌入漏洞检测模型')
-        self.templates['ivdetect'] = ConfigTemplate('IVDetect', ivdetect_template, 'IVDetect 智能漏洞检测模型')
-        self.templates['linevul'] = ConfigTemplate('LineVul', linevul_template, 'LineVul 代码行级别漏洞检测')
-        self.templates['vulberta'] = ConfigTemplate('VulBERTa', vulberta_template, 'VulBERTa BERT变体漏洞检测')
+        # Register all templates
+        self.templates['deepwukong'] = ConfigTemplate('DeepWuKong', deepwukong_template, 'DeepWuKong graph neural vulnerability detection model')
+        self.templates['gnnregvd'] = ConfigTemplate('GNNReGVD', gnnregvd_template, 'GNN-based regression vulnerability detection model')
+        self.templates['devign'] = ConfigTemplate('Devign', devign_template, 'Devign graph embedding vulnerability detection model')
+        self.templates['ivdetect'] = ConfigTemplate('IVDetect', ivdetect_template, 'IVDetect intelligent vulnerability detection model')
+        self.templates['linevul'] = ConfigTemplate('LineVul', linevul_template, 'LineVul line-level vulnerability detection')
+        self.templates['vulberta'] = ConfigTemplate('VulBERTa', vulberta_template, 'VulBERTa variant vulnerability detection')
     
     def get_template(self, name: str) -> Optional[ConfigTemplate]:
-        """获取指定模板"""
+        """Get a specific template."""
         return self.templates.get(name.lower())
     
     def list_templates(self) -> List[str]:
-        """列出所有可用模板"""
+        """List all available templates."""
         return list(self.templates.keys())
     
     def list_models(self) -> List[str]:
-        """列出所有可用模型"""
+        """List all available models."""
         return [template.template['MODEL']['NAME'] for template in self.templates.values()]
     
     def get_template_by_model(self, model_name: str) -> Optional[ConfigTemplate]:
-        """根据模型名称获取模板"""
+        """Get template by model name."""
         model_map = {
             'deepwukong': 'deepwukong',
             'gnnregvd': 'gnnregvd', 
@@ -511,7 +511,7 @@ class ConfigTemplateManager:
         return None
     
     def generate_config(self, model_name: str, **kwargs) -> Optional[Dict[str, Any]]:
-        """生成指定模型的配置"""
+        """Generate config for the specified model."""
         template = self.get_template_by_model(model_name)
         if template:
             return template.generate_config(**kwargs)

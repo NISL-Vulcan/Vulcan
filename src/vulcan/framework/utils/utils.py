@@ -66,7 +66,7 @@ def throughput(dataloader, model: nn.Module, times: int = 30):
 '''
 
 def show_models():
-    """延迟导入模型模块，仅在需要展示模型列表时才加载，避免不必要的依赖。"""
+    """Lazily import model modules only when listing models to avoid unnecessary dependencies."""
     from vulcan.framework import models
     model_names = models.__all__
     model_variants = [list(eval(f'models.{name.lower()}_settings').keys()) for name in model_names]

@@ -1,5 +1,7 @@
 # Vulcan Detection: Architecture for Security Testing with Extensible Resourceful Intelligence and Adaptation
 
+For Chinese introduction, see `README_CN.md`.
+
 ## Deeplearning-based Vulnerability Detection Framework
 
 ### Introduction
@@ -23,20 +25,20 @@ Getting started with vulcan Detection is simple and straightforward. Follow the 
 
 
 #### Conda Installation
-推荐使用 conda 保证依赖完整（Python 3.10，PyTorch/CUDA 等由 vulcan.yaml 提供）。`vulcan.yaml` 已与 `pyproject.toml` 对齐，仅 DGL 需从官方 wheel 单独安装。
+Conda is recommended to ensure a complete dependency setup (Python 3.10 and PyTorch/CUDA are defined in `vulcan.yaml`). The `vulcan.yaml` file is aligned with `pyproject.toml`; only DGL must be installed separately from the official wheel source.
 
-**方式一：从 vulcan.yaml 创建环境（推荐）**
+**Option 1: Create environment from vulcan.yaml (recommended)**
 ```bash
 git clone https://github.com/NISL-Vulcan/Vulcan.git
 cd Vulcan
 conda env create -f vulcan.yaml -n vulcan
 conda activate vulcan
-# DGL 1.1.3 不在 PyPI，需从官方 wheel 安装
+# DGL 1.1.3 is not on PyPI; install from official wheels
 pip install dgl -f https://data.dgl.ai/wheels/repo.html
 pip install -e .
 ```
 
-**方式二：仅创建 Python 3.10 环境后安装**
+**Option 2: Create only a Python 3.10 environment, then install**
 ```bash
 conda create -n vulcan python=3.10 -y
 conda activate vulcan
@@ -68,7 +70,7 @@ You're welcome to delve deeper into them.
 #### Jupyter Notebook
 Navigate to the 'notebooks' directory and use Jupyter in the way you're accustomed to.
 
-#### Command-Line（基于 src/vulcan 布局）
+#### Command-Line (based on the `src/vulcan` layout)
 We take the ReGVD method paired with the REVEAL dataset as an example.
 
 ```bash

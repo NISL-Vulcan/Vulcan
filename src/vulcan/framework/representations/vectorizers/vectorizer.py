@@ -15,8 +15,8 @@ class Vectorizer:
         self.unknown_node = unknown_node
 
     def create(self, name: str):
-        from preprocessing.vectorizers import word2vec as w2v
         if name == 'word2vec':
+            from vulcan.framework.representations.vectorizers import word2vec as w2v
             return w2v.W2vVectorizer(self.embedding_dim, self.min_count, self.unknown_node)
         else:
             raise ValueError('No such vectorizer')

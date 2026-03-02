@@ -1,33 +1,33 @@
-## 使用指南（基于 src/vulcan 布局）
+## Usage Guide (Based on the `src/vulcan` Layout)
 
-### 1. 环境准备
+### 1. Environment Setup
 
-在项目根目录执行：
+Run the following commands in the project root:
 
 ```bash
 cd /home/aejl3/NISL-Vulcan/NISL-Vulcan-2.0/Vulcan
 
-# 推荐：按 pyproject.toml 安装（src/ 布局的标准用法）
+# Recommended: install from pyproject.toml (standard for `src/` layout)
 python -m pip install -e .
 
-# 可选：开发/测试依赖
+# Optional: development/test dependencies
 python -m pip install -e ".[dev]"
 ```
 
-### 2. 训练与验证
+### 2. Training and Validation
 
 ```bash
-# 训练
+# Training
 vulcan-train --cfg configs/custom.yaml
 
-# 验证
+# Validation
 vulcan-val --cfg configs/custom.yaml
 
 # benchmark
 vulcan-benchmark --cfg configs/custom.yaml
 ```
 
-对应的 Python 入口位于：
+The corresponding Python entry points are:
 
 ```python
 from vulcan.cli.train import cli_main as train_cli
@@ -35,22 +35,22 @@ from vulcan.cli.val import cli_main as val_cli
 from vulcan.cli.benchmark import cli_main as benchmark_cli
 ```
 
-### 3. 后端服务与 API
+### 3. Backend Services and API
 
 ```bash
-# 启动后端
+# Start backend
 python scripts/start_backend.py
 
-# 启动综合服务
+# Start integrated services
 python scripts/start_services.py
 ```
 
-相关服务封装位于：
+Related service wrappers are:
 
 ```python
 from vulcan.services.backend_server import run_backend
 from vulcan.services.apis import DataCollectionApp, DatasetOptimizationJobs
 ```
 
-更多结构性说明可参考 `docs/architecture.md` 与 `reconstruction_plan.md`。 
+For more structural details, see `docs/architecture.md` and `reconstruction_plan.md`.
 

@@ -17,12 +17,12 @@ class DynamicRatioTuner:
         self._last_sample_content = None
         self._last_sample_hash = None
         
-        # 使用OS查找文件路径
+        # ENOSEN
         self.dataset_dir = self._find_dataset_directory()
         self.configs_dir = self._find_configs_directory()
         
     def _find_dataset_directory(self) -> str:
-        """使用OS查找dataset目录"""
+        """ENOSENdatasetEN"""
         possible_paths = [
             './vulcan-Detection/dataset',
             './dataset',
@@ -33,24 +33,24 @@ class DynamicRatioTuner:
         
         for path in possible_paths:
             if os.path.exists(path) and os.path.isdir(path):
-                print(f"[OS查找] 找到dataset目录: {os.path.abspath(path)}")
+                print(f"[OSEN] ENdatasetEN: {os.path.abspath(path)}")
                 return path
                 
-        # 如果没找到，尝试在当前目录的直接子目录中搜索（避免深度遍历）
+        # EN,EN(EN)
         try:
             current_dir = os.getcwd()
             for item in os.listdir(current_dir):
                 item_path = os.path.join(current_dir, item)
                 if os.path.isdir(item_path) and 'dataset' in item.lower():
-                    print(f"[OS查找] 在子目录中找到dataset: {os.path.abspath(item_path)}")
+                    print(f"[OSEN] ENdataset: {os.path.abspath(item_path)}")
                     return item_path
         except Exception as e:
-            print(f"[OS查找] 搜索子目录时出错: {e}")
+            print(f"[OSEN] EN: {e}")
                 
-        raise FileNotFoundError("无法找到dataset目录")
+        raise FileNotFoundError("ENdatasetEN")
     
     def _find_configs_directory(self) -> str:
-        """使用OS查找configs目录"""
+        """ENOSENconfigsEN"""
         possible_paths = [
             './vulcan-Detection/configs',
             './configs',
@@ -61,28 +61,28 @@ class DynamicRatioTuner:
         
         for path in possible_paths:
             if os.path.exists(path) and os.path.isdir(path):
-                print(f"[OS查找] 找到configs目录: {os.path.abspath(path)}")
+                print(f"[OSEN] ENconfigsEN: {os.path.abspath(path)}")
                 return path
                 
-        # 如果没找到，尝试在当前目录的直接子目录中搜索（避免深度遍历）
+        # EN,EN(EN)
         try:
             current_dir = os.getcwd()
             for item in os.listdir(current_dir):
                 item_path = os.path.join(current_dir, item)
                 if os.path.isdir(item_path) and 'configs' in item.lower():
-                    print(f"[OS查找] 在子目录中找到configs: {os.path.abspath(item_path)}")
+                    print(f"[OSEN] ENconfigs: {os.path.abspath(item_path)}")
                     return item_path
         except Exception as e:
-            print(f"[OS查找] 搜索子目录时出错: {e}")
+            print(f"[OSEN] EN: {e}")
                 
-        raise FileNotFoundError("无法找到configs目录")
+        raise FileNotFoundError("ENconfigsEN")
     
     def _find_data_files(self) -> Tuple[str, str]:
-        """查找漏洞和非漏洞数据文件"""
+        """EN"""
         vuln_files = []
         nonvuln_files = []
         
-        # 在dataset目录中查找文件
+        # ENdatasetEN
         for file in os.listdir(self.dataset_dir):
             file_path = os.path.join(self.dataset_dir, file)
             if os.path.isfile(file_path) and file.endswith('.jsonl'):
@@ -91,7 +91,7 @@ class DynamicRatioTuner:
                 elif 'non' in file.lower() and 'vulnerable' in file.lower():
                     nonvuln_files.append(file_path)
         
-        # 如果没有找到，尝试其他命名模式
+        # EN,EN
         if not vuln_files:
             for file in os.listdir(self.dataset_dir):
                 file_path = os.path.join(self.dataset_dir, file)
@@ -107,32 +107,32 @@ class DynamicRatioTuner:
                         nonvuln_files.append(file_path)
         
         if not vuln_files:
-            raise FileNotFoundError(f"在{self.dataset_dir}中未找到漏洞数据文件")
+            raise FileNotFoundError(f"EN{self.dataset_dir}EN")
         if not nonvuln_files:
-            raise FileNotFoundError(f"在{self.dataset_dir}中未找到非漏洞数据文件")
+            raise FileNotFoundError(f"EN{self.dataset_dir}EN")
             
-        vuln_path = vuln_files[0]  # 使用第一个找到的文件
+        vuln_path = vuln_files[0]  # EN
         nonvuln_path = nonvuln_files[0]
         
-        print(f"[OS查找] 漏洞数据文件: {vuln_path}")
-        print(f"[OS查找] 非漏洞数据文件: {nonvuln_path}")
+        print(f"[OSEN] EN: {vuln_path}")
+        print(f"[OSEN] EN: {nonvuln_path}")
         
         return vuln_path, nonvuln_path
     
     def _find_config_file(self) -> str:
-        """查找配置文件"""
+        """EN"""
         config_files = []
         
-        # 在configs目录中查找yaml配置文件
+        # ENconfigsENyamlEN
         for file in os.listdir(self.configs_dir):
             file_path = os.path.join(self.configs_dir, file)
             if os.path.isfile(file_path) and file.endswith('.yaml'):
                 config_files.append(file_path)
         
         if not config_files:
-            raise FileNotFoundError(f"在{self.configs_dir}中未找到yaml配置文件")
+            raise FileNotFoundError(f"EN{self.configs_dir}ENyamlEN")
         
-        # 优先选择包含特定关键词的配置文件
+        # EN
         preferred_configs = []
         for config in config_files:
             if 'regvd' in config.lower() or 'reveal' in config.lower():
@@ -143,32 +143,32 @@ class DynamicRatioTuner:
         else:
             config_path = config_files[0]
             
-        print(f"[OS查找] 配置文件: {config_path}")
+        print(f"[OSEN] EN: {config_path}")
         return config_path
     
     def _find_train_script(self) -> str:
-        """查找训练脚本"""
+        """EN"""
         possible_paths = [
             'vulcan-train',
         ]
         
         for path in possible_paths:
             if os.path.exists(path) and os.path.isfile(path):
-                print(f"[OS查找] 训练脚本: {os.path.abspath(path)}")
+                print(f"[OSEN] EN: {os.path.abspath(path)}")
                 return path
                 
-        # 如果没找到，尝试在当前目录及其子目录中搜索
+        # EN,EN
         for root, dirs, files in os.walk('.'):
             if 'train.py' in files:
                 train_path = os.path.join(root, 'train.py')
-                print(f"[OS查找] 在子目录中找到训练脚本: {os.path.abspath(train_path)}")
+                print(f"[OSEN] EN: {os.path.abspath(train_path)}")
                 return train_path
                 
-        raise FileNotFoundError("无法找到训练入口（建议先安装项目，确保 vulcan-train 可用）")
+        raise FileNotFoundError("EN(EN,EN vulcan-train EN)")
 
     def sample_and_generate_trainset(self, vuln_path: str, nonvuln_path: str, ratio: float, output_path: str):
-        """采样并生成训练集"""
-        # 合并原有和新生成的漏洞样本
+        """EN"""
+        # EN
         vuln_path_new = os.path.join(self.dataset_dir, 'vulnerables_new.jsonl')
         all_vuln_lines = []
         
@@ -182,23 +182,23 @@ class DynamicRatioTuner:
         with open(nonvuln_path, 'r', encoding='utf-8') as f:
             nonvuln_lines = f.readlines()
             
-        print(f"真实漏洞样本数: {len(all_vuln_lines)}, 真实非漏洞样本数: {len(nonvuln_lines)}")
+        print(f"EN: {len(all_vuln_lines)}, EN: {len(nonvuln_lines)}")
 
-        # 1. 每次采样漏洞样本数量在450~550之间浮动
+        # 1. EN450~550EN
         num_vuln = random.randint(450, 550)
         if num_vuln > len(all_vuln_lines):
             num_vuln = len(all_vuln_lines)
 
-        # 2. 尽量不重复采样漏洞样本
+        # 2. EN
         if not hasattr(self, '_used_vuln_indices') or len(self._used_vuln_indices) >= len(all_vuln_lines):
             self._used_vuln_indices = set()
             self._vuln_shuffle_order = list(range(len(all_vuln_lines)))
             random.shuffle(self._vuln_shuffle_order)
             
-        # 选取未用过的索引
+        # EN
         available_indices = [i for i in self._vuln_shuffle_order if i not in self._used_vuln_indices]
         if len(available_indices) < num_vuln:
-            # 剩余不够，重置再采样
+            # EN,EN
             self._used_vuln_indices = set()
             self._vuln_shuffle_order = list(range(len(all_vuln_lines)))
             random.shuffle(self._vuln_shuffle_order)
@@ -209,7 +209,7 @@ class DynamicRatioTuner:
             self._used_vuln_indices.add(idx)
         vuln_sample = [all_vuln_lines[i] for i in chosen_indices]
 
-        # 3. 比例在0.1~0.9之间，非漏洞样本数量=漏洞样本数/ratio
+        # 3. EN0.1~0.9EN,EN=EN/ratio
         ratio = max(0.1, min(0.9, ratio))
         num_nonvuln = int(round(num_vuln / ratio))
         num_nonvuln = min(num_nonvuln, len(nonvuln_lines))
@@ -221,43 +221,43 @@ class DynamicRatioTuner:
                 f.write(line)
                 
         actual_ratio = len(vuln_sample) / len(nonvuln_sample) if len(nonvuln_sample) > 0 else 0
-        print(f"[采样] 生成训练集: {output_path}")
-        print(f"[采样] 漏洞样本: {len(vuln_sample)} (目标: 450~550, 实际: {len(vuln_sample)})")
-        print(f"[采样] 非漏洞样本: {len(nonvuln_sample)} (目标比例: {ratio:.3f}:1, 实际比例: {actual_ratio:.3f}:1)")
-        print(f"[采样] 总样本数: {len(vuln_sample) + len(nonvuln_sample)}")
+        print(f"[EN] EN: {output_path}")
+        print(f"[EN] EN: {len(vuln_sample)} (EN: 450~550, EN: {len(vuln_sample)})")
+        print(f"[EN] EN: {len(nonvuln_sample)} (EN: {ratio:.3f}:1, EN: {actual_ratio:.3f}:1)")
+        print(f"[EN] EN: {len(vuln_sample) + len(nonvuln_sample)}")
 
-        # 自动分析与上一次采样文件的内容差异
+        # EN
         with open(output_path, 'r', encoding='utf-8') as f:
             current_content = f.readlines()
         current_hash = hashlib.md5(''.join(current_content).encode('utf-8')).hexdigest()
         
         if self._last_sample_content is not None:
             diff_count = sum(1 for a, b in zip(self._last_sample_content, current_content) if a != b)
-            print(f"[分析] 与上一次采样文件不同的样本数: {diff_count}")
+            print(f"[EN] EN: {diff_count}")
             if current_hash == self._last_sample_hash:
-                print("[分析] 本次采样内容与上一次完全相同！")
+                print("[EN] EN!")
             else:
-                print("[分析] 本次采样内容与上一次有差异。")
+                print("[EN] EN.")
                 
         self._last_sample_content = current_content
         self._last_sample_hash = current_hash
 
     def evaluate_ratio(self, ratio: float) -> Tuple[float, Dict[str, float]]:
         """
-        用真实数据集采样、训练并返回模型性能（如F1-score）和所有评估指标。
-        采样数据和配置均为唯一临时文件，不影响原有训练和配置。
+        EN,EN(ENF1-score)EN.
+        EN,EN.
         """
-        # 使用OS查找文件
+        # ENOSEN
         vuln_path, nonvuln_path = self._find_data_files()
         config_path = self._find_config_file()
         train_py = self._find_train_script()
         
-        # 1. 采样生成新训练集（唯一临时文件）
+        # 1. EN(EN)
         tmp_id = str(uuid.uuid4())[:8]
         trainset_path = os.path.join(self.dataset_dir, f'train_dynamic_{tmp_id}_{ratio:.3f}.jsonl')
         self.sample_and_generate_trainset(vuln_path, nonvuln_path, ratio, trainset_path)
         
-        # 2. 修改 yaml 配置文件中的 train_data_file 路径，生成唯一临时配置
+        # 2. EN yaml EN train_data_file EN,EN
         with open(config_path, 'r', encoding='utf-8') as f:
             cfg = yaml.safe_load(f)
         cfg['DATASET']['PARAMS']['args']['train_data_file'] = trainset_path
@@ -266,19 +266,19 @@ class DynamicRatioTuner:
         with open(tmp_cfg_path, 'w', encoding='utf-8') as f:
             yaml.dump(cfg, f, allow_unicode=True)
             
-        # 3. 实时读取训练输出并解析指标
+        # 3. EN
         import sys
         cmd = [sys.executable, train_py, '--cfg', tmp_cfg_path]
-        print(f"[训练] 启动训练，比例={ratio:.3f}，训练集={trainset_path}")
-        print(f"[训练] 训练脚本: {train_py}")
-        print(f"[训练] 配置文件: {tmp_cfg_path}")
+        print(f"[EN] EN,EN={ratio:.3f},EN={trainset_path}")
+        print(f"[EN] EN: {train_py}")
+        print(f"[EN] EN: {tmp_cfg_path}")
         start_time = time.strftime('%Y-%m-%d %H:%M:%S', time.localtime())
-        print(f"[训练] 开始时间: {start_time}")
+        print(f"[EN] EN: {start_time}")
         
         metrics = {}
         f1 = 0.0
         try:
-            # 设置环境变量确保输出不被缓冲
+            # EN
             env = os.environ.copy()
             env['PYTHONUNBUFFERED'] = '1'
             
@@ -293,69 +293,69 @@ class DynamicRatioTuner:
             )
             
             patterns = {
-                'F1': r'F1[-_ ]*score[:：]?\s*([0-9.]+)',
-                'Accuracy': r'Acc(?:uracy)?[:：]?\s*([0-9.]+)',
-                'Precision': r'Precision[:：]?\s*([0-9.]+)',
-                'Recall': r'Recall[:：]?\s*([0-9.]+)',
-                'ROC_AUC': r'ROC[_-]?AUC[:：]?\s*([0-9.]+)',
-                'PR_AUC': r'PR[_-]?AUC[:：]?\s*([0-9.]+)'
+                'F1': r'F1[-_ ]*score[::]?\s*([0-9.]+)',
+                'Accuracy': r'Acc(?:uracy)?[::]?\s*([0-9.]+)',
+                'Precision': r'Precision[::]?\s*([0-9.]+)',
+                'Recall': r'Recall[::]?\s*([0-9.]+)',
+                'ROC_AUC': r'ROC[_-]?AUC[::]?\s*([0-9.]+)',
+                'PR_AUC': r'PR[_-]?AUC[::]?\s*([0-9.]+)'
             }
             
-            # 实时读取输出
+            # EN
             while True:
                 line = process.stdout.readline()
                 if not line and process.poll() is not None:
                     break
                     
                 if line:
-                    print(line.rstrip())  # 实时输出到终端
+                    print(line.rstrip())  # EN
                     for key, pat in patterns.items():
                         m = re.search(pat, line, re.I)
                         if m:
                             metrics[key] = float(m.group(1))
                             if key == 'F1':
                                 f1 = float(m.group(1))
-                                print(f"[指标] 检测到F1分数: {f1:.4f}")
+                                print(f"[EN] ENF1EN: {f1:.4f}")
                             
             return_code = process.wait()
             end_time = time.strftime('%Y-%m-%d %H:%M:%S', time.localtime())
-            print(f"[训练] 结束时间: {end_time}")
-            print(f"[训练] 返回码: {return_code}")
+            print(f"[EN] EN: {end_time}")
+            print(f"[EN] EN: {return_code}")
             
             if return_code != 0:
-                print(f"[训练] 训练脚本返回非零退出码: {return_code}")
+                print(f"[EN] EN: {return_code}")
                 f1 = 0.0
                 metrics = {}
             
         except Exception as e:
-            print(f"[训练] 训练失败: {e}")
+            print(f"[EN] EN: {e}")
             import traceback
             traceback.print_exc()
             f1 = 0.0
             metrics = {}
             
-        # 4. 清理临时文件
+        # 4. EN
         try:
             if os.path.exists(trainset_path):
                 os.remove(trainset_path)
-                print(f"[清理] 已删除临时训练集: {trainset_path}")
+                print(f"[EN] EN: {trainset_path}")
             if os.path.exists(tmp_cfg_path):
                 os.remove(tmp_cfg_path)
-                print(f"[清理] 已删除临时配置文件: {tmp_cfg_path}")
+                print(f"[EN] EN: {tmp_cfg_path}")
         except Exception as e:
-            print(f"[清理] 临时文件删除失败: {e}")
+            print(f"[EN] EN: {e}")
             
         return f1, metrics
 
     def get_best_ratio(self, max_iter: int = 15) -> float:
         """
-        使用二分法在0.1到0.9区间自动搜索最佳数据集比例。
-        增加最大训练次数max_iter，防止死循环。
-        最后输出最佳比例对应的所有评估指标。
+        EN0.1EN0.9EN.
+        ENmax_iter,EN.
+        EN.
         """
-        print("[二分法] 开始自动搜索最佳数据集比例...")
+        print("[EN] EN...")
         left, right = 0.1, 0.9
-        eps = 0.01  # 精度
+        eps = 0.01  # EN
         best_ratio = left
         best_score = -float('inf')
         best_metrics = {}
@@ -365,13 +365,13 @@ class DynamicRatioTuner:
             mid1 = left + (right - left) / 3
             mid2 = right - (right - left) / 3
             
-            print(f"\n[二分法] 第{iter_count + 1}次迭代: 测试比例 {mid1:.3f} 和 {mid2:.3f}")
+            print(f"\n[EN] EN{iter_count + 1}EN: EN {mid1:.3f} EN {mid2:.3f}")
             
             score1, metrics1 = self.evaluate_ratio(mid1)
             score2, metrics2 = self.evaluate_ratio(mid2)
             
-            print(f"[二分法] 比例 {mid1:.3f} 的F1分数: {score1:.4f}")
-            print(f"[二分法] 比例 {mid2:.3f} 的F1分数: {score2:.4f}")
+            print(f"[EN] EN {mid1:.3f} ENF1EN: {score1:.4f}")
+            print(f"[EN] EN {mid2:.3f} ENF1EN: {score2:.4f}")
             
             if score1 < score2:
                 left = mid1
@@ -387,34 +387,34 @@ class DynamicRatioTuner:
                     best_metrics = metrics1
                     
             iter_count += 1
-            print(f"[二分法] 当前最佳比例: {best_ratio:.3f}, F1分数: {best_score:.4f}")
-            print(f"[二分法] 进度: {int((iter_count / max_iter) * 100)}%")
+            print(f"[EN] EN: {best_ratio:.3f}, F1EN: {best_score:.4f}")
+            print(f"[EN] EN: {int((iter_count / max_iter) * 100)}%")
             
-        print(f"\n[二分法] 搜索完成，最佳比例: {best_ratio:.3f}，共训练{iter_count}次")
-        print(f"[最佳比例模型评估指标]")
+        print(f"\n[EN] EN,EN: {best_ratio:.3f},EN{iter_count}EN")
+        print(f"[EN]")
         for k, v in best_metrics.items():
             print(f"  {k}: {v:.4f}")
             
         return round(best_ratio, 3)
 
 if __name__ == "__main__":
-    print("\n==== 数据集比例动态调整机制（二分法） ====")
+    print("\n==== EN(EN) ====")
     
     try:
-        print("初始化数据集优化器...")
+        print("EN...")
         tuner = DynamicRatioTuner()
-        print("初始化完成")
+        print("EN")
         
-        print("开始二分法搜索最佳比例...")
+        print("EN...")
         best_ratio = tuner.get_best_ratio()
-        print(f"\n最终最佳数据集比例: {best_ratio}")
+        print(f"\nEN: {best_ratio}")
         
     except FileNotFoundError as e:
-        print(f"文件未找到错误: {e}")
-        print("请检查数据集和配置文件是否存在")
+        print(f"EN: {e}")
+        print("EN")
         sys.exit(1)
     except Exception as e:
-        print(f"程序执行出错: {e}")
+        print(f"EN: {e}")
         import traceback
         traceback.print_exc()
         sys.exit(1) 

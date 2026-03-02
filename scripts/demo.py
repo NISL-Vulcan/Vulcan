@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 """
-vulcan-Detection 前端后端集成演示脚本
+vulcan-Detection frontend/backend integration demo script.
 """
 
 import os
@@ -12,64 +12,64 @@ import json
 from pathlib import Path
 
 def print_header():
-    """打印标题"""
+    """Print demo header."""
     print("=" * 60)
-    print("vulcan-Detection 前端后端集成演示")
+    print("vulcan-Detection Frontend/Backend Integration Demo")
     print("=" * 60)
     print()
 
 def check_backend_status():
-    """检查后端服务器状态"""
+    """Check backend server status."""
     try:
         response = requests.get("http://localhost:5000/api/health", timeout=5)
         if response.status_code == 200:
-            print("✅ 后端服务器正在运行")
+            print(" Backend server is running")
             return True
         else:
-            print("❌ 后端服务器响应异常")
+            print(" Backend server returned an unexpected response")
             return False
     except Exception as e:
-        print(f"❌ 无法连接到后端服务器: {e}")
-        print("请先启动后端服务器: python start_backend.py")
+        print(f" Cannot connect to backend server: {e}")
+        print("Start backend first: python start_backend.py")
         return False
 
 def demo_get_models():
-    """演示获取可用模型"""
-    print("\n🔍 获取可用模型列表...")
+    """Demo: fetch available models."""
+    print("\n Fetching available model list...")
     try:
         response = requests.get("http://localhost:5000/api/models")
         data = response.json()
         
         if data.get("success"):
             models = data.get("models", [])
-            print(f"✅ 找到 {len(models)} 个可用模型:")
+            print(f" Found {len(models)} available models:")
             for i, model in enumerate(models, 1):
                 print(f"  {i}. {model}")
         else:
-            print(f"❌ 获取模型失败: {data.get('error')}")
+            print(f" Failed to fetch models: {data.get('error')}")
     except Exception as e:
-        print(f"❌ 请求失败: {e}")
+        print(f" Request failed: {e}")
 
 def demo_get_datasets():
-    """演示获取可用数据集"""
-    print("\n📊 获取可用数据集列表...")
+    """Demo: fetch available datasets."""
+    print("\n Fetching available dataset list...")
     try:
         response = requests.get("http://localhost:5000/api/datasets")
         data = response.json()
         
         if data.get("success"):
             datasets = data.get("datasets", [])
-            print(f"✅ 找到 {len(datasets)} 个可用数据集:")
+            print(f" Found {len(datasets)} available datasets:")
             for i, dataset in enumerate(datasets, 1):
                 print(f"  {i}. {dataset}")
         else:
-            print(f"❌ 获取数据集失败: {data.get('error')}")
+            print(f" Failed to fetch datasets: {data.get('error')}")
     except Exception as e:
-        print(f"❌ 请求失败: {e}")
+        print(f" Request failed: {e}")
 
 def demo_generate_config():
-    """演示生成配置文件"""
-    print("\n🔧 生成配置文件演示...")
+    """Demo: generate a config file."""
+    print("\n Config generation demo...")
     
     config_request = {
         "model_name": "DeepWuKong",
@@ -82,7 +82,7 @@ def demo_generate_config():
         "save_dir": "demo_output"
     }
     
-    print(f"📝 配置参数:")
+    print(" Config parameters:")
     for key, value in config_request.items():
         print(f"  {key}: {value}")
     
@@ -94,34 +94,34 @@ def demo_generate_config():
         data = response.json()
         
         if data.get("success"):
-            print(f"✅ {data.get('message')}")
-            print(f"📁 配置文件路径: {data.get('config_path')}")
-            print(f"🆔 配置ID: {data.get('config_id')}")
+            print(f" {data.get('message')}")
+            print(f" Config file path: {data.get('config_path')}")
+            print(f" Config ID: {data.get('config_id')}")
             
-            # 显示部分配置内容
+            # Show selected config fields
             config = data.get('config', {})
-            print(f"\n📋 配置文件预览:")
-            print(f"  设备: {config.get('DEVICE')}")
-            print(f"  模型: {config.get('MODEL', {}).get('NAME')}")
-            print(f"  数据集: {config.get('DATASET', {}).get('NAME')}")
-            print(f"  训练轮数: {config.get('TRAIN', {}).get('EPOCHS')}")
-            print(f"  批次大小: {config.get('TRAIN', {}).get('BATCH_SIZE')}")
+            print("\n Config preview:")
+            print(f"  Device: {config.get('DEVICE')}")
+            print(f"  Model: {config.get('MODEL', {}).get('NAME')}")
+            print(f"  Dataset: {config.get('DATASET', {}).get('NAME')}")
+            print(f"  Epochs: {config.get('TRAIN', {}).get('EPOCHS')}")
+            print(f"  Batch size: {config.get('TRAIN', {}).get('BATCH_SIZE')}")
             
             return data.get('config_id')
         else:
-            print(f"❌ 生成配置失败: {data.get('error')}")
+            print(f" Config generation failed: {data.get('error')}")
             return None
     except Exception as e:
-        print(f"❌ 请求失败: {e}")
+        print(f" Request failed: {e}")
         return None
 
 def demo_start_training(config_id):
-    """演示启动训练"""
+    """Demo: start training."""
     if not config_id:
-        print("\n⚠️ 跳过训练演示 - 没有有效的配置ID")
+        print("\n Skip training demo - invalid config ID")
         return None
     
-    print("\n🚀 启动训练演示...")
+    print("\n Training startup demo...")
     
     try:
         response = requests.post(
@@ -132,29 +132,29 @@ def demo_start_training(config_id):
         
         if data.get("success"):
             job_id = data.get('job_id')
-            print(f"✅ {data.get('message')}")
-            print(f"🆔 任务ID: {job_id}")
+            print(f" {data.get('message')}")
+            print(f" Job ID: {job_id}")
             return job_id
         else:
-            print(f"❌ 启动训练失败: {data.get('error')}")
+            print(f" Failed to start training: {data.get('error')}")
             return None
     except Exception as e:
-        print(f"❌ 请求失败: {e}")
+        print(f" Request failed: {e}")
         return None
 
 def demo_monitor_training(job_id):
-    """演示训练监控"""
+    """Demo: monitor training."""
     if not job_id:
-        print("\n⚠️ 跳过训练监控演示 - 没有有效的任务ID")
+        print("\n Skip training monitor demo - invalid job ID")
         return
     
-    print("\n📊 训练监控演示...")
-    print("正在监控训练进度（监控30秒）...")
+    print("\n Training monitor demo...")
+    print("Monitoring training progress for 30 seconds...")
     
     start_time = time.time()
     last_status = None
     
-    while time.time() - start_time < 30:  # 监控30秒
+    while time.time() - start_time < 30:  # monitor for 30 seconds
         try:
             response = requests.get(f"http://localhost:5000/api/training-status/{job_id}")
             data = response.json()
@@ -166,109 +166,109 @@ def demo_monitor_training(job_id):
                 total_epochs = data.get('total_epochs', 0)
                 metrics = data.get('metrics', {})
                 
-                # 只在状态变化时打印
+                # Print only when status changes
                 if status != last_status:
-                    print(f"\n📈 训练状态: {status}")
+                    print(f"\n Training status: {status}")
                     if status == 'running':
-                        print(f"⏳ 进度: {progress:.1f}%")
-                        print(f"🔄 轮次: {current_epoch}/{total_epochs}")
+                        print(f" Progress: {progress:.1f}%")
+                        print(f" Epoch: {current_epoch}/{total_epochs}")
                         if metrics.get('loss'):
-                            print(f"📉 损失: {metrics['loss']:.4f}")
+                            print(f" Loss: {metrics['loss']:.4f}")
                         if metrics.get('accuracy'):
-                            print(f"🎯 准确率: {metrics['accuracy']:.4f}")
+                            print(f" Accuracy: {metrics['accuracy']:.4f}")
                     last_status = status
                 
-                # 如果训练完成或失败，退出监控
+                # Stop monitor when training completes or fails
                 if status in ['completed', 'failed']:
-                    print(f"\n🏁 训练{status}: 监控结束")
+                    print(f"\n Training {status}: monitoring finished")
                     if status == 'completed':
-                        print("🎉 训练成功完成！")
+                        print(" Training completed successfully")
                     else:
-                        print("💔 训练失败")
+                        print(" Training failed")
                     break
                     
             else:
-                print(f"❌ 获取状态失败: {data.get('error')}")
+                print(f" Failed to fetch status: {data.get('error')}")
                 break
                 
         except Exception as e:
-            print(f"❌ 监控请求失败: {e}")
+            print(f" Monitor request failed: {e}")
             break
         
-        time.sleep(3)  # 每3秒查询一次
+        time.sleep(3)  # query every 3 seconds
     
-    print("\n📊 监控演示结束")
+    print("\n Monitor demo finished")
 
 def demo_command_examples():
-    """演示命令示例"""
-    print("\n💬 自然语言命令示例:")
-    print("以下是您可以在前端界面中使用的命令:")
+    """Demo: natural language command examples."""
+    print("\n Natural language command examples:")
+    print("You can use commands like the following in the frontend UI:")
     print()
     
     examples = [
-        "生成配置文件，模型：DeepWuKong，数据集：DWK_Dataset，设备：cuda，epochs：20，batch_size：64",
-        "生成配置文件，模型：Devign，数据集：Devign_Partial，学习率：0.0001",
-        "生成配置文件，模型：IVDetect，设备：cpu，快速模式",
-        "启动训练",
-        "查看训练状态",
-        "查看训练进度"
+        "Generate config file, model: DeepWuKong, dataset: DWK_Dataset, device: cuda, epochs: 20, batch_size: 64",
+        "Generate config file, model: Devign, dataset: Devign_Partial, learning_rate: 0.0001",
+        "Generate config file, model: IVDetect, device: cpu, quick mode",
+        "Start training",
+        "Show training status",
+        "Show training progress"
     ]
     
     for i, example in enumerate(examples, 1):
         print(f"  {i}. \"{example}\"")
 
 def main():
-    """主函数"""
+    """Main entrypoint."""
     print_header()
     
-    # 检查后端状态
+    # Check backend status
     if not check_backend_status():
         return
     
-    print("\n🎯 开始系统功能演示...")
+    print("\n Starting feature demo...")
     
-    # 演示获取模型和数据集
+    # Demo: list models and datasets
     demo_get_models()
     demo_get_datasets()
     
-    # 演示生成配置文件
+    # Demo: generate config file
     config_id = demo_generate_config()
     
-    # 询问是否要启动训练演示
+    # Ask whether to run training demo
     print("\n" + "="*50)
-    print("⚠️  训练演示说明:")
-    print("训练演示会启动真实的训练进程，可能需要较长时间。")
-    print("演示会监控训练30秒后自动结束。")
+    print("  Training demo notes:")
+    print("This will start a real training process and may take time.")
+    print("The monitor runs for 30 seconds and then exits automatically.")
     print("="*50)
     
-    response = input("\n是否要继续训练演示？(y/N): ").strip().lower()
+    response = input("\nContinue with training demo? (y/N): ").strip().lower()
     
     if response in ['y', 'yes']:
-        # 演示启动训练
+        # Demo: start training
         job_id = demo_start_training(config_id)
         
-        # 演示训练监控
+        # Demo: monitor training
         demo_monitor_training(job_id)
     else:
-        print("⏭️  跳过训练演示")
+        print("  Skip training demo")
     
-    # 显示命令示例
+    # Show command examples
     demo_command_examples()
     
     print("\n" + "="*60)
-    print("🎉 演示完成！")
+    print(" Demo completed")
     print()
-    print("接下来您可以:")
-    print("1. 打开前端界面进行可视化操作")
-    print("2. 使用API接口进行程序化调用")
-    print("3. 查看生成的配置文件: generated_configs/")
+    print("Next steps:")
+    print("1. Open frontend UI for visual operations")
+    print("2. Call APIs programmatically")
+    print("3. Inspect generated config files in: generated_configs/")
     print("="*60)
 
 if __name__ == '__main__':
     try:
         main()
     except KeyboardInterrupt:
-        print("\n\n👋 演示被用户中断")
+        print("\n\n Demo interrupted by user")
     except Exception as e:
-        print(f"\n❌ 演示过程中发生错误: {e}")
+        print(f"\n Error during demo: {e}")
         sys.exit(1) 

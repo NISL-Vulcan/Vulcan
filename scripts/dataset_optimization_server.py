@@ -1,9 +1,9 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 """
-薄封装：数据集优化服务入口（legacy server wrapper）。
+Thin wrapper: dataset optimization service entrypoint (legacy server wrapper).
 
-核心实现位于 `src/vulcan/services/dataset_optimization_server_app.py`。
+Core implementation is in `src/vulcan/services/dataset_optimization_server_app.py`.
 """
 
 from __future__ import annotations

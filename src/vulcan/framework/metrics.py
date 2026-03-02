@@ -12,7 +12,7 @@ class Metrics:
 
     def update(self, pred: Tensor, target: Tensor) -> None:
         pred = pred.argmax(dim=1)
-        # histc 仅支持浮点类型，这里保持数值不变，仅转换 dtype
+        # torch.histc only supports float tensors; keep values unchanged and only cast dtype.
         combined = (target * self.num_classes + pred).float()
         self.hist += torch.histc(
             combined,
@@ -43,7 +43,7 @@ class Metrics:
         try:
             return roc_auc_score(self.all_targets, self.all_preds)
         except ValueError:
-            # 例如验证集中只有一个类别时，sklearn 会报错，此处返回 0.0 以便流程继续
+            # If validation has only one class, sklearn raises; return 0.0 to keep flow running.
             return 0.0
 
     def compute_pr_auc(self):

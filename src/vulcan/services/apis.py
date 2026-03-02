@@ -1,7 +1,7 @@
 """
-后端相关 API 的统一封装。
+EN API EN.
 
-统一从 `src/vulcan/services/*_app.py` 暴露后端相关 Flask app 与任务 API。
+EN `src/vulcan/services/*_app.py` EN Flask app EN API.
 """
 
 from __future__ import annotations
@@ -17,9 +17,9 @@ __all__ = [
 
 def start_dataset_optimization(max_iterations: int = 15):
     """
-    启动数据集优化任务的服务封装。
+    EN.
 
-    等价于调用 `vulcan.services.dataset_optimization_api_app.start_dataset_optimization_api`。
+    EN `vulcan.services.dataset_optimization_api_app.start_dataset_optimization_api`.
     """
     from . import dataset_optimization_api_app
 
@@ -28,9 +28,9 @@ def start_dataset_optimization(max_iterations: int = 15):
 
 def get_dataset_optimization_status(job_id: str):
     """
-    获取数据集优化任务状态的服务封装。
+    EN.
 
-    等价于调用 `vulcan.services.dataset_optimization_api_app.get_optimization_status_api`。
+    EN `vulcan.services.dataset_optimization_api_app.get_optimization_status_api`.
     """
     from . import dataset_optimization_api_app
 
@@ -39,9 +39,9 @@ def get_dataset_optimization_status(job_id: str):
 
 def get_dataset_optimization_logs(job_id: str):
     """
-    获取数据集优化任务日志的服务封装。
+    EN.
 
-    等价于调用 `vulcan.services.dataset_optimization_api_app.get_optimization_logs_api`。
+    EN `vulcan.services.dataset_optimization_api_app.get_optimization_logs_api`.
     """
     from . import dataset_optimization_api_app
 
@@ -49,7 +49,7 @@ def get_dataset_optimization_logs(job_id: str):
 
 
 def __getattr__(name: str):
-    # 延迟导入，避免在 import vulcan.services.apis 时就启动/初始化 Flask 相关对象。
+    # EN,EN import vulcan.services.apis EN/EN Flask EN.
     if name == "DataCollectionApp":
         from . import data_collection_api_app
 

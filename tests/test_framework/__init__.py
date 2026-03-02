@@ -1,2 +1,2 @@
-"""与 vulcan.framework 相关的测试将放在此目录。"""
+"""Tests related to vulcan.framework live in this directory."""
 

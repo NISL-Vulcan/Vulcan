@@ -44,7 +44,7 @@ class VulDeepecker(nn.Module):
         x = x.float()
         #input_x = x.unsqueeze(1).float()
         x, _ = self.lstm(x)
-        x = x[:, -1, :] # 选择最后一个时间步长的输出
+        x = x[:, -1, :] # Select output from the last time step
         x = F.leaky_relu(self.fc1(x))
         x = self.dropout1(x)
         x = F.leaky_relu(self.fc2(x))
@@ -54,9 +54,9 @@ class VulDeepecker(nn.Module):
     '''
     def forward(self, x):
         #author added.
-        seq_len = 1 # 你可以根据你的序列长度设置这个值
-        # 在序列维度上添加一个新维度
-        input_x = x.unsqueeze(1) # 现在input_x的形状为(batch_size, 1, input_size)
+        seq_len = 1 # Set this according to your sequence length.
+        # Add a new sequence dimension.
+        input_x = x.unsqueeze(1) # input_x shape: (batch_size, 1, input_size)
         input_x = input_x.float()
         x = input_x
         

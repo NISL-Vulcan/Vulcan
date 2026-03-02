@@ -4,8 +4,8 @@ from importlib import import_module
 from typing import Any, Dict, Tuple
 
 
-# 为了避免在 CLI 启动时一次性 import 全部模型（其中部分依赖 torch_geometric/dgl 等可选依赖），
-# 这里改为按需动态加载。
+# Avoid importing all models at CLI startup, because some models depend on
+# optional packages such as torch_geometric/dgl. Load modules on demand.
 _MODEL_LOADERS: Dict[str, Tuple[str, str]] = {
     "GNNReGVD": ("vulcan.framework.models.GNNReGVD", "GNNReGVD"),
     "Devign": ("vulcan.framework.models.devign_re", "Devign"),

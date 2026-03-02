@@ -41,19 +41,19 @@ class SVM:
         from sklearn.metrics import accuracy_score
         return accuracy_score(y_true, y_pred.cpu().numpy())
 if __name__ == "__main__":
-    # 示例
+    # Example
     X_train = torch.rand((100, 30))
     y_train = (X_train.sum(dim=1) > 15).long()
     X_test = torch.rand((20, 30))
     y_test = (X_test.sum(dim=1) > 15).long()
 
-    # 使用CPU模型
+    # Use CPU model
     svm_cpu = SVM(device='cpu')
     svm_cpu.fit(X_train, y_train)
     accuracy_cpu = svm_cpu.evaluate(X_test, y_test)
     print(f"CPU Accuracy: {accuracy_cpu:.4f}")
 
-    # 使用GPU模型（如果可用）
+    # Use GPU model (if available)
     if torch.cuda.is_available():
         svm_gpu = SVM(device='cuda')
         svm_gpu.fit(X_train, y_train)

@@ -90,7 +90,7 @@ class LineVul(Dataset):
             #     np.random.seed(10)
             #     np.random.shuffle(self.examples)
             #     self.examples = self.examples[:num_keep]
-                '''logger 待处理
+                '''logger TODO
             if 'train' in file_path:
                 logger.info("*** Total Sample ***")
                 logger.info("\tTotal: {}\tselected: {}\tpercent: {}\t".format(total_len, num_keep, sample_percent))

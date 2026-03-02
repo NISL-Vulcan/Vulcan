@@ -13,14 +13,14 @@ authors = [
   { name = "NISL Vulcan Team" }
 ]
 dependencies = [
-  # 后端与 API 相关（来自 requirements_backend.txt 与 vulcan.yaml）
+  # Backend and API dependencies (from requirements_backend.txt and vulcan.yaml)
   "Flask==2.3.2",
   "Flask-CORS==4.0.0",
   "PyYAML==6.0.1",
   "requests==2.31.0",
   "psutil==5.9.8",
 
-  # 训练与图学习相关（来自 vulcan.yaml pip 部分）
+  # Training and graph-learning dependencies (from vulcan.yaml pip section)
   "absl-py==1.4.0",
   "aiohttp==3.9.0",
   "antlr4-python3-runtime>=4.9.3,<4.10",
@@ -36,7 +36,7 @@ dependencies = [
   "cryptography==41.0.7",
   "daal4py>=2023.1.1",
   "datasets==2.12.0",
-  # DGL 1.1.3 需从官方 wheel 安装，安装本项目前请先执行:
+  # DGL 1.1.3 must be installed from official wheels before installing this package:
   #   pip install dgl -f https://data.dgl.ai/wheels/repo.html
   "dill==0.3.6",
   "filelock==3.13.1",

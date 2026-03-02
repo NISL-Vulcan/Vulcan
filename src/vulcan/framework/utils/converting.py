@@ -2,7 +2,7 @@ from typing import Dict, List
 
 import numpy
 
-from utils.vocabulary import PAD, UNK, SOS, EOS
+from vulcan.framework.utils.vocabulary import PAD, UNK, SOS, EOS
 
 
 def parse_token(token: str, is_split: bool, separator: str = "|") -> List[str]:
@@ -21,7 +21,7 @@ def tokens_to_wrapped_numpy(tokens: List[str],
         raise ValueError("Pass SOS and EOS tokens for wrapping list of tokens")
 
     size = max_length + (1 if is_wrapped else 0)
-    wrapped_numpy = numpy.full((size, 1), pad_token, dtype=numpy.long)
+    wrapped_numpy = numpy.full((size, 1), pad_token, dtype=numpy.int64)
 
     start_index = 0
     if is_wrapped:
@@ -65,7 +65,7 @@ def strings_to_wrapped_numpy(
     size = max_length + (1 if is_wrapped else 0)
     wrapped_numpy = numpy.full((size, len(values)),
                                pad_token,
-                               dtype=numpy.long)
+                               dtype=numpy.int64)
 
     start_index = 0
     if is_wrapped:

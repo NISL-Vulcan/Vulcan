@@ -27,8 +27,9 @@ class vdet_for_java(nn.Module):
     def forward(self, input_x):
         """Use last four hidden states"""
         ids, mask = input_x
-        ids = ids.to('cuda')
-        mask = mask.to('cuda')
+        device = self.linear.weight.device
+        ids = ids.to(device)
+        mask = mask.to(device)
         all_hidden_states = torch.stack(self.model(ids, attention_mask=mask)["hidden_states"])
 
         concatenate_pooling = torch.cat(

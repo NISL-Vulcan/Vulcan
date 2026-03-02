@@ -101,27 +101,28 @@ class VDdata(Dataset):
             #print('self dataset:\n',self.dataset)
             labels = df['val'].values
 
-            # 数据过少或无正/负样本时，直接使用完整数据集，避免 smoke 测试因数据问题失败
+            # If data is too small or lacks positive/negative samples, keep full dataset
+            # to avoid smoke test failures caused by data issues.
             positive_idxs = np.where(labels == 1)[0]
             negative_idxs = np.where(labels == 0)[0]
             if len(df) == 0 or len(positive_idxs) == 0 or len(negative_idxs) == 0:
                 self.dataset = df
                 return
 
-            # 进行负样本的欠采样
+            # Undersample negative samples
             undersampled_negative_idxs = np.random.choice(negative_idxs, len(positive_idxs), replace=False)
 
-            # 合并正样本索引和欠采样后的负样本索引
+            # Merge positive indices and undersampled negative indices
             resampled_idxs = np.concatenate([positive_idxs, undersampled_negative_idxs])
 
-            # 根据新的索引划分数据集
+            # Split dataset using resampled indices
             train_idxs, val_idxs = train_test_split(resampled_idxs, test_size=0.2, stratify=labels[resampled_idxs])
 
-            # 创建训练集和验证集
+            # Create train and validation sets
             train_df = df.iloc[train_idxs]
             val_df = df.iloc[val_idxs]
 
-            # 输出结果以确认
+            # Print split summary
             print("Training Set Shape:", train_df.shape)
             print("Validation Set Shape:", val_df.shape)
             
@@ -154,7 +155,7 @@ class VDdata(Dataset):
             #     np.random.seed(10)
             #     np.random.shuffle(self.examples)
             #     self.examples = self.examples[:num_keep]
-            '''logger 待处理
+            '''logger TODO
             if 'train' in file_path:
                 logger.info("*** Total Sample ***")
                 logger.info("\tTotal: {}\tselected: {}\tpercent: {}\t".format(total_len, num_keep, sample_percent))

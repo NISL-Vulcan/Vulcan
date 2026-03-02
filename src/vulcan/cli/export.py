@@ -44,7 +44,7 @@ def export_coreml(model, inputs, file):
     
 
 def main(cfg):
-    """模型导出主逻辑。"""
+    """Main model export logic."""
     model = get_model(cfg['MODEL'])
     model.load_state_dict(torch.load(cfg['TEST']['MODEL_PATH'], map_location='cpu'))
     model.eval()
@@ -58,7 +58,7 @@ def main(cfg):
 
 
 def cli_main():
-    """命令行入口：解析配置并执行导出。"""
+    """CLI entrypoint: parse config and run export."""
     parser = argparse.ArgumentParser()
     parser.add_argument('--cfg', type=str, default='configs/custom.yaml')
     args = parser.parse_args()

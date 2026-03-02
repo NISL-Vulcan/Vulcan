@@ -47,9 +47,9 @@ class CodebertMixin(nn.Module):
         return self.baseline_fc(baseline_input)
 
     def forward_fusion(self, baseline_input, bg_input):
-        baseline_input = self.codebert_stack(baseline_input)
-        graph_feature = self.graph_stack(bg_input)
-        fusion = torch.cat((cb_feature, graph_feature), 1)
+        baseline_feature = self.codebert_stack(baseline_input)
+        graph_feature = self.bg_stack(bg_input)
+        fusion = torch.cat((baseline_feature, graph_feature), 1)
         return self.fusion_fc(fusion)
 
     def forward(self, baseline_input, bg_input):
@@ -77,7 +77,6 @@ import pandas
 import sklearn
 import torch.nn.functional as F
 import sklearn.model_selection
-from metrics import *
 
 
 device = "cuda:0"
@@ -162,5 +161,5 @@ class TextCNN(nn.Module):
         if self.use_fusion:
             return self.forward_fusion(baseline_input, bg_input)
         else:
-            return self.forward_baseline(baseline_input, bg_input)
+            return self.forward_baseline(baseline_input)
         

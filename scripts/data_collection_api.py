@@ -1,9 +1,9 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 """
-薄封装：数据收集 API 服务入口。
+Thin wrapper: data collection API service entrypoint.
 
-核心实现位于 `src/vulcan/services/data_collection_api_app.py`。
+Core implementation is in `src/vulcan/services/data_collection_api_app.py`.
 """
 
 from __future__ import annotations

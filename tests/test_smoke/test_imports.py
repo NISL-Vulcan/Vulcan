@@ -1,5 +1,5 @@
 def test_import_core_packages():
-    # 基本包导入 smoke test，用于快速验证安装与 PYTHONPATH 配置是否正确
+    # Basic package import smoke test for quick installation/PYTHONPATH validation.
     import vulcan  # noqa: F401
     import vulcan.framework  # noqa: F401
     import vulcan.lang  # noqa: F401
