@@ -1,0 +1,65 @@
+import os
+
+import pytest
+
+extractors = pytest.importorskip("vulcan.framework.representations.extractors.extractors")
+Visitor = extractors.Visitor
+clang = extractors.clang
+from vulcan.framework.representations.syntax_seq import SyntaxSeqBuilder
+from vulcan.framework.representations.syntax_seq import SyntaxSeqVisitor
+from vulcan.framework.representations.syntax_seq import SyntaxTokenkindVisitor
+from vulcan.framework.representations.syntax_seq import SyntaxTokenkindVariableVisitor
+
+
+program_1fn_2 = """
+int bar(int a) {
+  if (a > 10)
+    return a;
+  return -1;
+}
+"""
+
+
+program_fib = """
+int fib(int x) {
+    switch(x) {
+        case 0:
+            return 0;
+        case 1:
+            return 1;
+        default:
+            return fib(x-1) + fib(x-2);
+    }
+}
+"""
+
+
+def test_construct_with_custom_visitor():
+    builder = SyntaxSeqBuilder()
+    info = builder.string_to_info(program_1fn_2)
+    seq = builder.info_to_representation(info, SyntaxTokenkindVariableVisitor)
+
+
+def test_plot(tmpdir):
+    builder = SyntaxSeqBuilder()
+    info = builder.string_to_info(program_1fn_2)
+    seq = builder.info_to_representation(info)
+
+    outfile = os.path.join(tmpdir, "syntax_seq.png")
+    seq.draw(path=outfile, width=8)
+
+    assert os.path.isfile(outfile)
+
+
+def test_all_visitors():
+    for visitor in [
+        SyntaxSeqVisitor,
+        SyntaxTokenkindVisitor,
+        SyntaxTokenkindVariableVisitor,
+    ]:
+        builder = SyntaxSeqBuilder()
+        info = builder.string_to_info(program_1fn_2)
+        ast = builder.info_to_representation(info, visitor)
+
+        assert ast
+

@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 """
-调试数据集优化功能
+Debug dataset optimization workflow.
 """
 
 import os
@@ -9,18 +9,18 @@ import sys
 import subprocess
 
 def check_environment():
-    """检查环境"""
-    print("🔍 检查环境...")
+    """Check local environment."""
+    print(" Checking environment...")
     
-    # 检查Python版本
-    print(f"🐍 Python版本: {sys.version}")
-    print(f"🐍 Python路径: {sys.executable}")
+    # Check Python version
+    print(f" Python version: {sys.version}")
+    print(f" Python executable: {sys.executable}")
     
-    # 检查当前目录
+    # Check current directory
     current_dir = os.getcwd()
-    print(f"📁 当前目录: {current_dir}")
+    print(f" Current directory: {current_dir}")
     
-    # 检查必需文件
+    # Check required files
     required_files = [
         "backend_server.py",
         "auto_update_and_dynamic_ratio.py"
@@ -28,38 +28,38 @@ def check_environment():
     
     for file in required_files:
         if os.path.exists(file):
-            print(f"✅ {file} 存在")
+            print(f" {file} exists")
         else:
-            print(f"❌ {file} 不存在")
+            print(f" {file} does not exist")
     
-    # 检查数据集目录
+    # Check dataset directory
     dataset_dir = "dataset"
     if os.path.exists(dataset_dir):
-        print(f"✅ 数据集目录存在: {dataset_dir}")
+        print(f" Dataset directory exists: {dataset_dir}")
         dataset_files = os.listdir(dataset_dir)
-        print(f"📊 数据集文件: {dataset_files}")
+        print(f" Dataset files: {dataset_files}")
     else:
-        print(f"❌ 数据集目录不存在: {dataset_dir}")
+        print(f" Dataset directory does not exist: {dataset_dir}")
     
-    # 检查配置文件目录
+    # Check configs directory
     configs_dir = "configs"
     if os.path.exists(configs_dir):
-        print(f"✅ 配置文件目录存在: {configs_dir}")
+        print(f" Config directory exists: {configs_dir}")
         config_files = [f for f in os.listdir(configs_dir) if f.endswith('.yaml')]
-        print(f"📄 配置文件: {config_files}")
+        print(f" Config files: {config_files}")
     else:
-        print(f"❌ 配置文件目录不存在: {configs_dir}")
+        print(f" Config directory does not exist: {configs_dir}")
 
 def test_optimization_script():
-    """测试优化脚本"""
-    print("\n🧪 测试优化脚本...")
+    """Test optimization script."""
+    print("\n Testing optimization script...")
     
     try:
-        # 直接运行优化脚本
+        # Run optimization script directly
         cmd = [sys.executable, "auto_update_and_dynamic_ratio.py"]
-        print(f"🚀 运行命令: {' '.join(cmd)}")
+        print(f" Running command: {' '.join(cmd)}")
         
-        # 运行脚本并捕获输出
+        # Run script and capture output
         process = subprocess.Popen(
             cmd,
             stdout=subprocess.PIPE,
@@ -69,48 +69,48 @@ def test_optimization_script():
             env=dict(os.environ, PYTHONUNBUFFERED='1')
         )
         
-        print("📝 脚本输出:")
+        print(" Script output:")
         print("-" * 50)
         
-        # 读取前几行输出
+        # Read first few lines
         line_count = 0
         for line in process.stdout:
             print(line.rstrip())
             line_count += 1
-            if line_count >= 20:  # 只显示前20行
-                print("... (输出被截断)")
+            if line_count >= 20:  # show first 20 lines only
+                print("... (output truncated)")
                 break
         
-        # 等待进程完成
+        # Wait for process completion
         return_code = process.wait()
         print("-" * 50)
-        print(f"📊 脚本返回码: {return_code}")
+        print(f" Script return code: {return_code}")
         
         if return_code == 0:
-            print("✅ 优化脚本运行成功")
+            print(" Optimization script succeeded")
         else:
-            print("❌ 优化脚本运行失败")
+            print(" Optimization script failed")
             
     except Exception as e:
-        print(f"❌ 运行优化脚本异常: {e}")
+        print(f" Exception while running optimization script: {e}")
 
 def main():
-    """主函数"""
-    print("🚀 调试数据集优化功能")
+    """Main entrypoint."""
+    print(" Debugging dataset optimization workflow")
     print("=" * 60)
     
-    # 检查环境
+    # Check environment
     check_environment()
     
-    # 测试优化脚本
+    # Test optimization script
     test_optimization_script()
     
-    print("\n📋 调试完成")
-    print("\n💡 建议:")
-    print("1. 如果优化脚本运行成功，说明环境配置正确")
-    print("2. 如果脚本运行失败，请检查错误信息")
-    print("3. 确保数据集文件存在且格式正确")
-    print("4. 确保配置文件存在且格式正确")
+    print("\n Debugging complete")
+    print("\n Suggestions:")
+    print("1. If the optimization script succeeds, environment setup is likely correct")
+    print("2. If it fails, inspect the error output")
+    print("3. Ensure dataset files exist and formats are valid")
+    print("4. Ensure config files exist and formats are valid")
 
 if __name__ == "__main__":
     main() 

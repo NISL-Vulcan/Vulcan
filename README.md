@@ -1,5 +1,7 @@
 # Vulcan Detection: Architecture for Security Testing with Extensible Resourceful Intelligence and Adaptation
 
+For Chinese introduction, see `README_CN.md`.
+
 ## Deeplearning-based Vulnerability Detection Framework
 
 ### Introduction
@@ -23,12 +25,26 @@ Getting started with vulcan Detection is simple and straightforward. Follow the 
 
 
 #### Conda Installation
-Type the following commands in your Shell
-```
-conda create -n vulcan && conda activate vulcan
+Conda is recommended to ensure a complete dependency setup (Python 3.10 and PyTorch/CUDA are defined in `vulcan.yaml`). The `vulcan.yaml` file is aligned with `pyproject.toml`; only DGL must be installed separately from the official wheel source.
+
+**Option 1: Create environment from vulcan.yaml (recommended)**
+```bash
 git clone https://github.com/NISL-Vulcan/Vulcan.git
-cd Vulcan && chmod +x ./install.sh
-./install.sh
+cd Vulcan
+conda env create -f vulcan.yaml -n vulcan
+conda activate vulcan
+# DGL 1.1.3 is not on PyPI; install from official wheels
+pip install dgl -f https://data.dgl.ai/wheels/repo.html
+pip install -e .
+```
+
+**Option 2: Create only a Python 3.10 environment, then install**
+```bash
+conda create -n vulcan python=3.10 -y
+conda activate vulcan
+cd Vulcan
+pip install dgl -f https://data.dgl.ai/wheels/repo.html
+pip install -e .
 ```
 
 #### Direct Installation
@@ -50,20 +66,33 @@ You can conveniently utilize it through **Jupyter Notebook** or opt for a **comm
 
 We've already included several notebook files in the 'notebooks' directory for your reference. 
 You're welcome to delve deeper into them.
+
 #### Jupyter Notebook
 Navigate to the 'notebooks' directory and use Jupyter in the way you're accustomed to.
 
-#### Command-Line:
+#### Command-Line (based on the `src/vulcan` layout)
 We take the ReGVD method paired with the REVEAL dataset as an example.
-```
+
+```bash
+# Recommended installation (using pyproject.toml)
+pip install -e .
+
 # Training
-python tools/train.py --cfg configs/regvd_reveal.yaml
+vulcan-train --cfg configs/regvd_reveal.yaml
 
 # Validation
-python tools/val.py --cfg configs/regvd_reveal.yaml
+vulcan-val --cfg configs/regvd_reveal.yaml
 ```
-And we have already provided some usable examples in the 'config' directory.
-You can further inspect/check it.
+
+Legacy (not recommended): the old wrapper scripts under `tools/` are kept for compatibility, but the console scripts
+above are the preferred entrypoints for the `src/` layout.
+
+```bash
+vulcan-train --cfg configs/regvd_reveal.yaml
+vulcan-val --cfg configs/regvd_reveal.yaml
+```
+
+For more details about environment setup and usage, see `docs/usage.md`.
 ### Model Zoo
 Supported Models/Modules:
 - [Devign](https://github.com/epicosy/devign)
