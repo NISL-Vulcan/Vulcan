@@ -1,0 +1,59 @@
+DEVICE: cpu
+SAVE_DIR: output/trvd_test
+
+MODEL:
+  NAME: TrVD
+  BACKBONE: ''
+  PARAMS:
+    embedding_dim: 128
+    hidden_dim: 100
+    vocab_size: 53
+    encode_dim: 128
+    label_size: 2
+    n_heads: 4
+    n_transformer_layers: 2
+    dropout: 0.2
+
+DATASET:
+  NAME: TrVD
+  ROOT: ''
+  dataloader: trvd
+  PARAMS:
+    args:
+      dataset_path: tests/fixtures/trvd_test_data
+      language_lib: tests/fixtures/trvd_test_data/my-languages.so
+      embedding_size: 128
+      language: cpp
+      normalize: true
+      label_size: 2
+  PREPROCESS:
+    ENABLE: false
+    COMPOSE: []
+
+TRAIN:
+  BATCH_SIZE: 4
+  EPOCHS: 3
+  EVAL_INTERVAL: 1
+  AMP: false
+  DDP: false
+
+EVAL:
+  MODEL_PATH: ''
+  MSF:
+    ENABLE: false
+
+LOSS:
+  NAME: CrossEntropy
+
+OPTIMIZER:
+  NAME: adamax
+  LR: 0.001
+  WEIGHT_DECAY: 0.01
+
+SCHEDULER:
+  NAME: steplr
+  POWER: 0.9
+  WARMUP: 0
+  WARMUP_RATIO: 0.1
+  STEP_SIZE: 10
+  GAMMA: 0.8

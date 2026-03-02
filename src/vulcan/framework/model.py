@@ -18,6 +18,7 @@ _MODEL_LOADERS: Dict[str, Tuple[str, str]] = {
     "DeepWuKong": ("vulcan.framework.models.deepwukong.DWK_gnn", "DeepWuKong"),
     "IVDetect": ("vulcan.framework.models.IVDetect.IVDetect_model", "IVDmodel"),
     "Vdet_for_java": ("vulcan.framework.models.VDET", "vdet_for_java"),
+    "TrVD": ("vulcan.framework.models.TrVD", "TrVD"),
 }
 
 
