@@ -5,11 +5,8 @@ vulcan-Detection configuration template management.
 Provides model templates and automatic config generation.
 """
 
-import os
-import yaml
+import copy
 from typing import Dict, Any, List, Optional
-from pathlib import Path
-from datetime import datetime
 
 class ConfigTemplate:
     """Configuration template."""
@@ -544,6 +541,28 @@ class ConfigTemplateManager:
                 'GAMMA': 0.8
             }
         }
+
+        default_explain = {
+            "METHOD": "CocaDualView",
+            "ENABLE": True,
+            "SCORE_MODE": "model",
+            "THRESHOLD": 0.5,
+            "TOPK": 5,
+            "MAX_UNITS": 128,
+            "CKPT_PATH": "",
+            "OUTPUT_PATH": "",
+        }
+        for template in (
+            trvd_template,
+            deepwukong_template,
+            gnnregvd_template,
+            devign_template,
+            ivdetect_template,
+            linevul_template,
+            vulberta_template,
+        ):
+            if "EXPLAIN" not in template:
+                template["EXPLAIN"] = copy.deepcopy(default_explain)
 
         # Register all templates
         self.templates['trvd'] = ConfigTemplate('TrVD', trvd_template, 'TrVD AST decomposition based vulnerability detection model')
