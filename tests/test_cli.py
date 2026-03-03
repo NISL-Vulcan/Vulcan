@@ -1,4 +1,4 @@
-"""Unit tests for vulcan.cli."""
+"""vulcan.cli 单元测试。"""
 from argparse import Namespace
 import importlib
 import sys

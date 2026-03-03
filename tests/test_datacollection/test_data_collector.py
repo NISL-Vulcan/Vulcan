@@ -1,4 +1,4 @@
-"""Unit tests for vulcan.datacollection.data_collector."""
+"""vulcan.datacollection.data_collector 单元测试。"""
 
 from pathlib import Path
 

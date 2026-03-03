@@ -16,6 +16,51 @@ from vulcan.framework.utils.vocabulary import (
 )
 
 
+def test_xfg_vocabulary_build_from_w2v_and_convert(tmp_path, monkeypatch):
+    from vulcan.framework.datasets.XFGDataset_utils import vocabulary as xfg_vocab_mod
+
+    class _FakeWv(dict):
+        def __init__(self):
+            super().__init__({"foo": 0, "bar": 1})
+
+    class _FakeKeyedVectors:
+        def __init__(self):
+            self.key_to_index = _FakeWv()
+
+        @staticmethod
+        def load(path, mmap="r"):
+            return _FakeKeyedVectors()
+
+    # stub exists and KeyedVectors.load
+    w2v_path = tmp_path / "dummy.wv"
+    w2v_path.write_bytes(b"stub")
+    monkeypatch.setattr(xfg_vocab_mod, "exists", lambda p: True)
+    monkeypatch.setattr(xfg_vocab_mod, "KeyedVectors", _FakeKeyedVectors)
+
+    vocab = xfg_vocab_mod.Vocabulary.build_from_w2v(str(w2v_path))
+    # special tokens come first
+    assert vocab.convert_token_to_id(xfg_vocab_mod.PAD) == 0
+    assert vocab.convert_token_to_id(xfg_vocab_mod.UNK) == 1
+    assert vocab.convert_token_to_id(xfg_vocab_mod.MASK) == 2
+    # word2vec tokens come later
+    ids = vocab.convert_tokens_to_ids(["foo", "bar", "baz"])
+    assert ids[0] != ids[1]
+    # unknown token goes to UNK
+    assert ids[2] == vocab.convert_token_to_id(xfg_vocab_mod.UNK)
+    assert vocab.get_pad_id() == vocab.convert_token_to_id(xfg_vocab_mod.PAD)
+
+
+def test_xfg_vocabulary_dump_and_load_roundtrip(tmp_path):
+    from vulcan.framework.datasets.XFGDataset_utils import vocabulary as xfg_vocab_mod
+
+    vocab = xfg_vocab_mod.Vocabulary(token_to_id={"<PAD>": 0, "foo": 1})
+    p = tmp_path / "xfg_vocab.pkl"
+    vocab.dump_vocabulary(str(p))
+    loaded = xfg_vocab_mod.Vocabulary.load_vocabulary(str(p))
+    assert loaded.token_to_id == vocab.token_to_id
+
+
+
 def test_vocabulary_constants():
     assert PAD == "<PAD>"
     assert UNK == "<UNK>"

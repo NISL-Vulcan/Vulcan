@@ -127,6 +127,7 @@ vulcan-train = "vulcan.cli.train:cli_main"
 vulcan-val = "vulcan.cli.val:cli_main"
 vulcan-benchmark = "vulcan.cli.benchmark:cli_main"
 vulcan-export = "vulcan.cli.export:cli_main"
+vulcan-explain = "vulcan.cli.explain:cli_main"
 vulcan-backend = "vulcan.services.backend_server:run_backend"
 
 [tool.setuptools]

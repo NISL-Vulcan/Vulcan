@@ -1,5 +1,6 @@
 """Unit tests for vulcan.services.apis."""
 
+import os
 import sys
 import types
 
@@ -93,7 +94,7 @@ def test_dataset_optimization_api_status_and_logs(monkeypatch):
 
         @staticmethod
         def get_duration():
-            return "10m0s"
+            return "10 minutes 0 seconds"
 
         @staticmethod
         def get_full_logs():
@@ -109,7 +110,7 @@ def test_dataset_optimization_api_status_and_logs(monkeypatch):
 
     assert status["success"] is True
     assert status["status"] == "completed"
-    assert "best ratio" in status["status_description"].lower()
+    assert "best ratio" in status["status_description"]
     assert logs["success"] is True
     assert logs["log_count"] == 2
 
@@ -237,7 +238,7 @@ def test_dataset_optimization_server_start_status_logs_health(monkeypatch):
 
         @staticmethod
         def get_duration():
-            return "1m0s"
+            return "1 minute 0 seconds"
 
         @staticmethod
         def get_full_logs():
@@ -333,5 +334,188 @@ def test_resource_updater_update_resources_deduplicate(monkeypatch):
     )
 
     updater.update_resources()
-    # Two queries each have one unique title plus one duplicate title: 3 unique items.
+    # Two queries each have one unique title plus one shared title, yielding 3 unique entries in total
     assert len(extracted) == 3
+
+
+def test_dynamic_ratio_find_dirs_and_files(tmp_path, monkeypatch):
+    from vulcan.services import auto_update_and_dynamic_ratio as ratio_mod
+
+    dataset_dir = tmp_path / "dataset"
+    configs_dir = tmp_path / "configs"
+    dataset_dir.mkdir()
+    configs_dir.mkdir()
+    (dataset_dir / "vuln_samples.jsonl").write_text('{"a":1}\n', encoding="utf-8")
+    (dataset_dir / "non-vulnerables.jsonl").write_text('{"a":0}\n', encoding="utf-8")
+    (configs_dir / "regvd.yaml").write_text("x: 1\n", encoding="utf-8")
+    monkeypatch.chdir(tmp_path)
+
+    tuner = ratio_mod.DynamicRatioTuner()
+    assert tuner.dataset_dir.endswith("dataset")
+    assert tuner.configs_dir.endswith("configs")
+
+    vuln_path, nonvuln_path = tuner._find_data_files()
+    assert os.path.exists(vuln_path)
+    assert os.path.exists(nonvuln_path)
+    assert tuner._find_config_file().endswith("regvd.yaml")
+
+
+def test_dynamic_ratio_sample_and_generate_trainset(tmp_path, monkeypatch):
+    from vulcan.services import auto_update_and_dynamic_ratio as ratio_mod
+
+    dataset_dir = tmp_path / "dataset"
+    configs_dir = tmp_path / "configs"
+    dataset_dir.mkdir()
+    configs_dir.mkdir()
+    vuln_path = dataset_dir / "vuln.jsonl"
+    nonvuln_path = dataset_dir / "non-vulnerables.jsonl"
+    vuln_path.write_text("".join(f'{{"i":{i}}}\n' for i in range(12)), encoding="utf-8")
+    nonvuln_path.write_text("".join(f'{{"j":{i}}}\n' for i in range(24)), encoding="utf-8")
+
+    tuner = ratio_mod.DynamicRatioTuner.__new__(ratio_mod.DynamicRatioTuner)
+    tuner.dataset_dir = str(dataset_dir)
+    tuner.configs_dir = str(configs_dir)
+    tuner._used_vuln_indices = set()
+    tuner._vuln_shuffle_order = list(range(12))
+    tuner._last_sample_content = None
+    tuner._last_sample_hash = None
+
+    monkeypatch.setattr(ratio_mod.random, "randint", lambda a, b: 6)
+    monkeypatch.setattr(ratio_mod.random, "shuffle", lambda x: None)
+    out_path = dataset_dir / "train_dynamic.jsonl"
+    tuner.sample_and_generate_trainset(str(vuln_path), str(nonvuln_path), 0.5, str(out_path))
+    lines = out_path.read_text(encoding="utf-8").splitlines()
+    # vuln=6, nonvuln=12 (ratio=0.5)
+    assert len(lines) == 18
+
+
+def test_dynamic_ratio_evaluate_ratio_with_mocked_process(tmp_path, monkeypatch):
+    from vulcan.services import auto_update_and_dynamic_ratio as ratio_mod
+
+    dataset_dir = tmp_path / "dataset"
+    configs_dir = tmp_path / "configs"
+    dataset_dir.mkdir()
+    configs_dir.mkdir()
+    vuln_path = dataset_dir / "vuln.jsonl"
+    nonvuln_path = dataset_dir / "non-vulnerables.jsonl"
+    vuln_path.write_text('{"a":1}\n', encoding="utf-8")
+    nonvuln_path.write_text('{"a":0}\n', encoding="utf-8")
+    cfg_path = configs_dir / "regvd.yaml"
+    cfg_path.write_text("DATASET:\n  PARAMS:\n    args:\n      train_data_file: x\n", encoding="utf-8")
+    train_py = tmp_path / "train.py"
+    train_py.write_text("print('noop')\n", encoding="utf-8")
+
+    tuner = ratio_mod.DynamicRatioTuner.__new__(ratio_mod.DynamicRatioTuner)
+    tuner.dataset_dir = str(dataset_dir)
+    tuner.configs_dir = str(configs_dir)
+    tuner._used_vuln_indices = set()
+    tuner._vuln_shuffle_order = []
+    tuner._last_sample_content = None
+    tuner._last_sample_hash = None
+
+    monkeypatch.setattr(tuner, "_find_data_files", lambda: (str(vuln_path), str(nonvuln_path)))
+    monkeypatch.setattr(tuner, "_find_config_file", lambda: str(cfg_path))
+    monkeypatch.setattr(tuner, "_find_train_script", lambda: str(train_py))
+
+    def _fake_sample(vp, nvp, ratio, outp):
+        with open(outp, "w", encoding="utf-8") as f:
+            f.write('{"x":1}\n')
+
+    monkeypatch.setattr(tuner, "sample_and_generate_trainset", _fake_sample)
+
+    class _FakePopen:
+        def __init__(self, *args, **kwargs):
+            self._lines = ["F1-score: 0.77\n", "Accuracy: 0.81\n"]
+            self.stdout = self
+
+        def readline(self):
+            return self._lines.pop(0) if self._lines else ""
+
+        def poll(self):
+            return None if self._lines else 0
+
+        def wait(self):
+            return 0
+
+    monkeypatch.setattr(ratio_mod.subprocess, "Popen", _FakePopen)
+    f1, metrics = tuner.evaluate_ratio(0.3)
+    assert f1 == 0.77
+    assert metrics["Accuracy"] == 0.81
+    assert not any(p.name.startswith("tmp_dynamic_") for p in configs_dir.iterdir())
+
+
+def test_dynamic_ratio_get_best_ratio(monkeypatch):
+    from vulcan.services import auto_update_and_dynamic_ratio as ratio_mod
+
+    tuner = ratio_mod.DynamicRatioTuner.__new__(ratio_mod.DynamicRatioTuner)
+    score_fn = lambda r: 1.0 - abs(r - 0.42)
+    monkeypatch.setattr(tuner, "evaluate_ratio", lambda r: (score_fn(r), {"F1": score_fn(r)}))
+    best = tuner.get_best_ratio(max_iter=4)
+    assert 0.1 <= best <= 0.9
+
+
+def test_dataset_optimization_api_run_dataset_optimization_success(monkeypatch, tmp_path):
+    import vulcan.services.dataset_optimization_api_app as opt_api
+
+    class _FakePopen:
+        def __init__(self, *args, **kwargs):
+            self.stdout = iter([])
+
+        def wait(self):
+            return 0
+
+    monkeypatch.setattr(opt_api.subprocess, "Popen", _FakePopen)
+    monkeypatch.setattr(opt_api.os.path, "exists", lambda p: True)
+    monkeypatch.setattr(opt_api.os.path, "getsize", lambda p: 123)
+
+    job = opt_api.OptimizationJob(job_id="job-success")
+    job.log_file_path = str(tmp_path / "opt_success.log")
+
+    opt_api.run_dataset_optimization(job)
+    assert job.status == "completed"
+    assert job.progress == 100
+    # metrics 中应包含关键字段
+    assert "best_ratio" in job.metrics
+    assert "best_f1_score" in job.metrics
+    assert "total_iterations" in job.metrics
+    assert "duration" in job.metrics
+
+
+def test_dataset_optimization_api_run_dataset_optimization_missing_script(monkeypatch, tmp_path):
+    import vulcan.services.dataset_optimization_api_app as opt_api
+
+    def _fake_exists(path):
+        if path.endswith("auto_update_and_dynamic_ratio.py"):
+            return False
+        return True
+
+    monkeypatch.setattr(opt_api.os.path, "exists", _fake_exists)
+
+    job = opt_api.OptimizationJob(job_id="job-missing")
+    job.log_file_path = str(tmp_path / "opt_missing.log")
+
+    opt_api.run_dataset_optimization(job)
+    assert job.status == "failed"
+    assert job.progress == 0
+
+
+def test_dataset_optimization_server_run_dataset_optimization_success(monkeypatch, tmp_path):
+    import vulcan.services.dataset_optimization_server_app as opt_srv
+
+    class _FakePopen:
+        def __init__(self, *args, **kwargs):
+            self.stdout = iter([])
+
+        def wait(self):
+            return 0
+
+    monkeypatch.setattr(opt_srv.subprocess, "Popen", _FakePopen)
+    monkeypatch.setattr(opt_srv.os.path, "exists", lambda p: True)
+    monkeypatch.setattr(opt_srv.os.path, "getsize", lambda p: 123)
+
+    job = opt_srv.OptimizationJob(job_id="srv-job")
+    job.log_file_path = str(tmp_path / "srv_success.log")
+
+    opt_srv.run_dataset_optimization(job)
+    assert job.status == "completed"
+    assert job.progress == 100

@@ -19,6 +19,7 @@ __all__ = [
     "DeepWuKong",
     "IVDmodel",
     "vdet_for_java",
+    "TrVD",
 ]
 
 
@@ -34,6 +35,7 @@ _MODEL_ATTRS = {
     "DeepWuKong": ("vulcan.framework.models.deepwukong.DWK_gnn", "DeepWuKong"),
     "IVDmodel": ("vulcan.framework.models.IVDetect.IVDetect_model", "IVDmodel"),
     "vdet_for_java": ("vulcan.framework.models.VDET", "vdet_for_java"),
+    "TrVD": ("vulcan.framework.models.TrVD", "TrVD"),
 }
 
 

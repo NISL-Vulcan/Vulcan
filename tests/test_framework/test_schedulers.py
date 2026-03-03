@@ -47,6 +47,20 @@ def test_warmup_cosine_lr():
     assert 0 <= lr <= 0.02
 
 
+def test_warmup_polylr_zero_real_max_iter():
+    model = nn.Linear(4, 2)
+    opt = torch.optim.SGD(model.parameters(), lr=0.01)
+    # max_iter == warmup_iter -> real_max_iter 为 0，走保护分支
+    sched = WarmupPolyLR(
+        opt, power=0.9, max_iter=10,
+        warmup_iter=10, warmup_ratio=0.1, warmup="linear"
+    )
+    # 直接越过 warmup 阶段，触发 real_max_iter == 0 分支
+    sched.last_epoch = 10
+    ratio = sched.get_main_ratio()
+    assert isinstance(ratio, float)
+
+
 def test_warmup_exp_lr():
     model = nn.Linear(4, 2)
     opt = torch.optim.SGD(model.parameters(), lr=0.01)

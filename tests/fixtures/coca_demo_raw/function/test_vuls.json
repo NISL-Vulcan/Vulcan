@@ -1,0 +1,15 @@
+[
+  {
+    "id": "func-test-v-1",
+    "target": 1,
+    "func": "int exec_user(char *cmd) {\n  system(cmd);\n  return 0;\n}",
+    "cfgEdges": [
+      "[0,1]",
+      "[1,2]"
+    ],
+    "ddgEdges": [
+      "[0,1]"
+    ],
+    "nodes": []
+  }
+]

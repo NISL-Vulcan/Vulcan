@@ -1,0 +1,16 @@
+[
+  {
+    "id": "func-val-v-1",
+    "target": 1,
+    "func": "int vulnerable_read() {\n  char name[16];\n  gets(name);\n  return 1;\n}",
+    "cfgEdges": [
+      "[0,1]",
+      "[1,2]",
+      "[2,3]"
+    ],
+    "ddgEdges": [
+      "[1,2]"
+    ],
+    "nodes": []
+  }
+]

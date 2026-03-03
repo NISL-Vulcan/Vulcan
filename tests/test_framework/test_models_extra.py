@@ -266,12 +266,53 @@ def test_linevul_forward_branches_with_mocked_model_classes(monkeypatch):
     assert isinstance(attentions, tuple)
 
 
+def _import_mvdetection_module(monkeypatch):
+    try:
+        return importlib.import_module("vulcan.framework.models.mvdetection")
+    except ImportError:
+        fake_tg = types.ModuleType("torch_geometric")
+        fake_tg_nn = types.ModuleType("torch_geometric.nn")
+
+        class _FallbackRGCNConv:
+            def __init__(self, in_channels, out_channels, num_relations=None, num_bases=None):
+                self.out_channels = out_channels
+
+            def __call__(self, x, edge_index, edge_type):
+                if x.shape[1] == self.out_channels:
+                    return x
+                if x.shape[1] > self.out_channels:
+                    return x[:, : self.out_channels]
+                pad = torch.zeros(
+                    x.shape[0],
+                    self.out_channels - x.shape[1],
+                    dtype=x.dtype,
+                    device=x.device,
+                )
+                return torch.cat([x, pad], dim=1)
+
+        def _global_mean_pool(x, batch):
+            if batch.numel() == 0:
+                return torch.zeros(0, x.shape[1], dtype=x.dtype, device=x.device)
+            batch_size = int(batch.max().item()) + 1
+            out = []
+            for b in range(batch_size):
+                mask = batch == b
+                if mask.any():
+                    out.append(x[mask].mean(dim=0))
+            return torch.stack(out, dim=0)
+
+        fake_tg_nn.RGCNConv = _FallbackRGCNConv
+        fake_tg_nn.global_mean_pool = _global_mean_pool
+        fake_tg.nn = fake_tg_nn
+
+        monkeypatch.setitem(sys.modules, "torch_geometric", fake_tg)
+        monkeypatch.setitem(sys.modules, "torch_geometric.nn", fake_tg_nn)
+        sys.modules.pop("vulcan.framework.models.mvdetection", None)
+        return importlib.import_module("vulcan.framework.models.mvdetection")
+
+
 def test_custom_graph_conv_layer_edge_update_and_forward(monkeypatch):
-    mvd_mod = pytest.importorskip(
-        "vulcan.framework.models.mvdetection",
-        reason="mvdetection optional deps unavailable",
-        exc_type=ImportError,
-    )
+    mvd_mod = _import_mvdetection_module(monkeypatch)
 
     class _DummyRGCN:
         def __call__(self, x, edge_index, edge_type):
@@ -292,11 +333,7 @@ def test_custom_graph_conv_layer_edge_update_and_forward(monkeypatch):
 
 
 def test_fsgnn_forward_with_mocked_pool(monkeypatch):
-    mvd_mod = pytest.importorskip(
-        "vulcan.framework.models.mvdetection",
-        reason="mvdetection optional deps unavailable",
-        exc_type=ImportError,
-    )
+    mvd_mod = _import_mvdetection_module(monkeypatch)
 
     class _DummyGraphLayer(torch.nn.Module):
         def forward(self, x, edge_index, edge_type, edge_attr):
@@ -334,6 +371,49 @@ def test_fsgnn_forward_with_mocked_pool(monkeypatch):
 
     out = model(data)
     assert out.shape == (2, 2)
+
+
+def test_custom_graph_layer_node_and_edge_update(monkeypatch):
+    mvd_mod = _import_mvdetection_module(monkeypatch)
+
+    class _DummyRGCN:
+        def __call__(self, x, edge_index, edge_type):
+            return x + 3.0
+
+    layer = mvd_mod.CustomGraphConvolutionLayer(
+        in_features=4, out_features=4, num_relations=2, num_bases=1
+    )
+    monkeypatch.setattr(layer, "rgcn", _DummyRGCN())
+
+    x = torch.zeros(3, 4)
+    edge_index = torch.tensor([[0, 1], [1, 2]], dtype=torch.long)
+    edge_type = torch.tensor([0, 1], dtype=torch.long)
+    edge_attr = torch.randn(2, 5)
+
+    updated_x = layer.node_update(x, edge_index, edge_type, edge_attr)
+    updated_e = layer.edge_update(edge_attr)
+    assert torch.allclose(updated_x, x + 3.0)
+    assert torch.equal(updated_e, edge_attr)
+
+
+def test_custom_graph_layer_double_underscore_forward(monkeypatch):
+    mvd_mod = _import_mvdetection_module(monkeypatch)
+
+    class _DummyRGCN:
+        def __call__(self, x, edge_index, edge_type):
+            return x + 1.0
+
+    layer = mvd_mod.CustomGraphConvolutionLayer__(
+        in_features=4, out_features=4, num_relations=2
+    )
+    monkeypatch.setattr(layer, "rgcn", _DummyRGCN())
+
+    x = torch.zeros(3, 4)
+    edge_index = torch.tensor([[0, 1], [1, 2]], dtype=torch.long)
+    edge_type = torch.tensor([0, 1], dtype=torch.long)
+    edge_attr = torch.randn(2, 3)
+    out = layer(x, edge_index, edge_type, edge_attr)
+    assert torch.allclose(out, x + 1.0)
 
 
 def test_vdet_for_java_forward_with_mocked_automodel(monkeypatch):
@@ -487,6 +567,40 @@ def test_devign_forward_with_mocks(monkeypatch):
 def test_devign_origin_forward_with_mocks(monkeypatch):
     devign_origin_mod = importlib.import_module("vulcan.framework.models.Devign_origin")
     _run_devign_forward_with_mocks(devign_origin_mod, monkeypatch, graph_format="bi")
+
+
+def test_devign_origin_model_wrapper_and_prediction_head():
+    devign_origin_mod = importlib.import_module("vulcan.framework.models.Devign_origin")
+
+    class _DummyEncoder(torch.nn.Module):
+        def forward(self, input_ids, attention_mask=None):
+            bs = input_ids.shape[0]
+            # match caller expectation: encoder(...) returns tuple and we take [0]
+            return (torch.full((bs, 2), 0.25),)
+
+    wrapper = devign_origin_mod.Model(encoder=_DummyEncoder(), config=None, tokenizer=None, args={})
+    x = torch.tensor([[2, 3], [4, 1]], dtype=torch.long)
+    prob = wrapper(x)
+    assert prob.shape == (2, 2)
+    loss, prob2 = wrapper(x, labels=torch.tensor([0.0, 1.0]))
+    assert torch.is_tensor(loss)
+    assert prob2.shape == (2, 2)
+
+    class _Args:
+        hidden_size = 4
+        num_classes = 2
+
+    class _Cfg:
+        hidden_dropout_prob = 0.0
+
+    # cover default input_size path + explicit input_size path
+    head_default = devign_origin_mod.PredictionClassification(config=_Cfg(), args=_Args())
+    out = head_default(torch.randn(3, 4))
+    assert out.shape == (3, 2)
+
+    head_custom = devign_origin_mod.PredictionClassification(config=_Cfg(), args=_Args(), input_size=6)
+    out2 = head_custom(torch.randn(3, 6))
+    assert out2.shape == (3, 2)
 
 
 def test_gnnregvd_model_and_prediction_head():
@@ -875,3 +989,71 @@ def test_devign_re_net_and_wrapper(monkeypatch, tmp_path):
     loss = wrapper.loss(pred, target)
     assert torch.is_tensor(loss)
     assert loss.ndim == 0
+
+
+def test_modulesgnn_graph_convolution_forward_and_bias():
+    from vulcan.framework.models.modules.GNN import modulesGNN as gnn_mod
+
+    layer = gnn_mod.GraphConvolution(in_features=3, out_features=2, dropout=0.0, bias=True, act=torch.relu)
+    x = torch.tensor([[[1.0, 0.0, 1.0], [0.0, 1.0, 1.0]]], dtype=torch.float32)
+    adj = torch.tensor([[[1.0, 0.0], [0.0, 1.0]]], dtype=torch.float32)
+    out = layer(x, adj)
+    assert out.shape == (1, 2, 2)
+    assert torch.isfinite(out).all()
+
+
+def test_modulesgnn_reggnn_forward_att_ops():
+    from vulcan.framework.models.modules.GNN import modulesGNN as gnn_mod
+
+    inputs = torch.randn(2, 4, 3, dtype=torch.float64)
+    adj = torch.eye(4, dtype=torch.float64).unsqueeze(0).repeat(2, 1, 1)
+    mask = torch.ones(2, 4, 1, dtype=torch.float64)
+
+    m_sum = gnn_mod.ReGGNN(3, 5, num_GNN_layers=1, dropout=0.0, residual=True, att_op="sum")
+    out_sum = m_sum(inputs, adj, mask)
+    assert out_sum.shape == (2, 5)
+
+    m_concat = gnn_mod.ReGGNN(3, 5, num_GNN_layers=1, dropout=0.0, residual=False, att_op="concat")
+    out_concat = m_concat(inputs, adj, mask)
+    assert out_concat.shape == (2, 10)
+
+    m_mul = gnn_mod.ReGGNN(3, 5, num_GNN_layers=1, dropout=0.0, residual=True, att_op="mul")
+    out_mul = m_mul(inputs, adj, mask)
+    assert out_mul.shape == (2, 5)
+
+
+def test_modulesgnn_regcn_forward_residual_branches():
+    from vulcan.framework.models.modules.GNN import modulesGNN as gnn_mod
+
+    inputs = torch.randn(2, 4, 3, dtype=torch.float32)
+    adj = torch.eye(4, dtype=torch.float32).unsqueeze(0).repeat(2, 1, 1)
+    mask = torch.ones(2, 4, 1, dtype=torch.float32)
+
+    m_res = gnn_mod.ReGCN(3, 4, num_GNN_layers=2, dropout=0.0, residual=True, att_op="sum")
+    out_res = m_res(inputs, adj, mask)
+    assert out_res.shape == (2, 4)
+
+    m_nores = gnn_mod.ReGCN(3, 4, num_GNN_layers=2, dropout=0.0, residual=False, att_op="concat")
+    out_nores = m_nores(inputs, adj, mask)
+    assert out_nores.shape == (2, 8)
+
+
+def test_modulesgnn_gggnn_and_build_graph_functions():
+    from vulcan.framework.models.modules.GNN import modulesGNN as gnn_mod
+
+    inputs = torch.randn(1, 3, 2, dtype=torch.float64)
+    adj = torch.eye(3, dtype=torch.float64).unsqueeze(0)
+    mask = torch.ones(1, 3, 1, dtype=torch.float64)
+    g = gnn_mod.GGGNN(2, 3, num_GNN_layers=1, dropout=0.0)
+    out = g(inputs, adj, mask)
+    assert out.shape == (1, 3, 3)
+
+    word_embeddings = {1: [0.1, 0.2], 2: [0.3, 0.4], 3: [0.5, 0.6]}
+    x_adj, x_feat = gnn_mod.build_graph([[1, 2, 3], [2]], word_embeddings, window_size=2)
+    assert len(x_adj) == 2
+    assert len(x_feat) == 2
+    assert x_adj[0].shape[0] == len(x_feat[0])
+
+    x_adj_t, x_feat_t = gnn_mod.build_graph_text([[1, 2, 3], [3]], word_embeddings, window_size=2)
+    assert len(x_adj_t) == 2
+    assert len(x_feat_t) == 2

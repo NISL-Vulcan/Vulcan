@@ -5,11 +5,8 @@ vulcan-Detection configuration template management.
 Provides model templates and automatic config generation.
 """
 
-import os
-import yaml
+import copy
 from typing import Dict, Any, List, Optional
-from pathlib import Path
-from datetime import datetime
 
 class ConfigTemplate:
     """Configuration template."""
@@ -473,7 +470,102 @@ class ConfigTemplateManager:
             }
         }
         
+        # TrVD template
+        trvd_template = {
+            'DEVICE': 'cuda',
+            'SAVE_DIR': 'output',
+            'MODEL': {
+                'NAME': 'TrVD',
+                'BACKBONE': '',
+                'PARAMS': {
+                    'embedding_dim': 128,
+                    'hidden_dim': 100,
+                    'vocab_size': 5000,
+                    'encode_dim': 128,
+                    'label_size': 2,
+                    'n_heads': 4,
+                    'n_transformer_layers': 2,
+                    'dropout': 0.2,
+                    'pretrained_weight_path': ''
+                },
+                'PRETRAINED': ''
+            },
+            'DATASET': {
+                'NAME': 'TrVD',
+                'ROOT': '',
+                'dataloader': 'trvd',
+                'PARAMS': {
+                    'args': {
+                        'dataset_path': '/path/to/trvd/dataset',
+                        'language_lib': '',
+                        'grammar_dir': '',
+                        'w2v_path': '',
+                        'embedding_size': 128,
+                        'language': 'cpp',
+                        'normalize': True,
+                        'label_size': 2
+                    }
+                },
+                'PREPROCESS': {
+                    'ENABLE': False,
+                    'COMPOSE': []
+                }
+            },
+            'TRAIN': {
+                'BATCH_SIZE': 32,
+                'EPOCHS': 100,
+                'EVAL_INTERVAL': 1,
+                'AMP': False,
+                'DDP': False
+            },
+            'EVAL': {
+                'MODEL_PATH': '',
+                'MSF': {
+                    'ENABLE': False
+                }
+            },
+            'LOSS': {
+                'NAME': 'CrossEntropy'
+            },
+            'OPTIMIZER': {
+                'NAME': 'adamax',
+                'LR': 0.001,
+                'WEIGHT_DECAY': 0.01
+            },
+            'SCHEDULER': {
+                'NAME': 'steplr',
+                'POWER': 0.9,
+                'WARMUP': 0,
+                'WARMUP_RATIO': 0.1,
+                'STEP_SIZE': 10,
+                'GAMMA': 0.8
+            }
+        }
+
+        default_explain = {
+            "METHOD": "CocaDualView",
+            "ENABLE": True,
+            "SCORE_MODE": "model",
+            "THRESHOLD": 0.5,
+            "TOPK": 5,
+            "MAX_UNITS": 128,
+            "CKPT_PATH": "",
+            "OUTPUT_PATH": "",
+        }
+        for template in (
+            trvd_template,
+            deepwukong_template,
+            gnnregvd_template,
+            devign_template,
+            ivdetect_template,
+            linevul_template,
+            vulberta_template,
+        ):
+            if "EXPLAIN" not in template:
+                template["EXPLAIN"] = copy.deepcopy(default_explain)
+
         # Register all templates
+        self.templates['trvd'] = ConfigTemplate('TrVD', trvd_template, 'TrVD AST decomposition based vulnerability detection model')
         self.templates['deepwukong'] = ConfigTemplate('DeepWuKong', deepwukong_template, 'DeepWuKong graph neural vulnerability detection model')
         self.templates['gnnregvd'] = ConfigTemplate('GNNReGVD', gnnregvd_template, 'GNN-based regression vulnerability detection model')
         self.templates['devign'] = ConfigTemplate('Devign', devign_template, 'Devign graph embedding vulnerability detection model')
@@ -502,7 +594,8 @@ class ConfigTemplateManager:
             'ivdetect': 'ivdetect',
             'linevul': 'linevul',
             'vulberta_cnn': 'vulberta',
-            'vulberta': 'vulberta'
+            'vulberta': 'vulberta',
+            'trvd': 'trvd',
         }
         
         template_key = model_map.get(model_name.lower())

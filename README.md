@@ -13,6 +13,7 @@ Vulcan Detection aims to transform the landscape of security in computing system
 - **Extensible Resourceful Intelligence**: Incorporates AI and machine learning algorithms that can be easily extended and adapted to various security testing scenarios.
 - **Rich and Diverse Data Preprocessing Mechanisms**: Including code representation methods, graph neural networks, and sequence representation methods, allowing the free combination of preprocessing steps and adjustment of the processing flow.
 - **Adaptable Framework**: Tailored to meet individual requirements with built-in support for various vulnerability detection models.
+- **Explainability Pipeline**: Supports Coca-style dual-view explanation (PN/PS/FNS) with CLI execution and JSON output for audit and analysis.
 - **Abundant Datasets**: Offers a wide variety of datasets to train and test the models, providing a versatile environment for experimentation.
 - **Ease of Use**: Designed with the user in mind, vulcan offers an intuitive interface that makes implementing and modifying state-of-the-art (SOTA) vulnerability detection models a breeze.
 
@@ -82,6 +83,9 @@ vulcan-train --cfg configs/regvd_reveal.yaml
 
 # Validation
 vulcan-val --cfg configs/regvd_reveal.yaml
+
+# Explanation (model scoring mode)
+vulcan-explain --cfg configs/regvd_reveal.yaml --split val --ckpt /path/to/model.pth
 ```
 
 Legacy (not recommended): the old wrapper scripts under `tools/` are kept for compatibility, but the console scripts
@@ -93,6 +97,41 @@ vulcan-val --cfg configs/regvd_reveal.yaml
 ```
 
 For more details about environment setup and usage, see `docs/usage.md`.
+
+### Explainability and Coca Integration
+
+Vulcan now includes a Coca-compatible integration path:
+
+- Convert Coca raw json files (`function/slice` layout) to Vulcan JSONL format
+- Load converted data through `CocaJSONL`
+- Run dual-view explanation (`CocaDualView`) via `vulcan-explain`
+- Export sample-level explanation results and global PN/PS/FNS metrics
+
+Typical workflow:
+
+```bash
+# 1) Convert Coca raw data to JSONL
+python scripts/coca/convert_dataset.py \
+  --input-dir /path/to/coca_data \
+  --output-dir /path/to/converted_data \
+  --detector-hint reveal
+
+# 2) Run explanation with model scoring
+vulcan-explain --cfg configs/your_cfg.yaml --split test --ckpt /path/to/model.pth
+
+# 3) Or run explanation without checkpoint using keyword heuristic scoring
+vulcan-explain --cfg configs/your_cfg.yaml --split test --skip-load-ckpt --score-mode keyword
+```
+
+You can also generate an explain-ready config from a training config:
+
+```bash
+python scripts/create_explain_config.py \
+  --input-cfg configs/your_train.yaml \
+  --output-cfg configs/your_explain.yaml \
+  --score-mode model \
+  --ckpt /path/to/model.pth
+```
 ### Model Zoo
 Supported Models/Modules:
 - [Devign](https://github.com/epicosy/devign)
@@ -107,6 +146,7 @@ Supported Models/Modules:
 - VulCNN
 - transformers
 - VulBERTa
+- TrVD
 
 ### Supported Datasets
 - REVEAL
@@ -115,6 +155,7 @@ Supported Models/Modules:
 - MSR_20_CODE/BigVul
 - CODEXGLUE
 - D2A
+- Coca converted JSONL (`CocaJSONL`)
 - ...
 
 ### Supported Preprocess Methods
@@ -134,6 +175,12 @@ Supported Models/Modules:
 - **Vectorizers/word2vec**
 - **sent2vec**
 - ...
+
+### Supported Explain Methods
+- **CocaDualView** (`vulcan-explain`)
+  - factual/counterfactual dual-view explanation
+  - PN/PS/FNS aggregate metrics
+  - model scoring mode and keyword heuristic scoring mode
 
 
 ### Customization

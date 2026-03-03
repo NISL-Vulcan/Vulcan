@@ -69,7 +69,8 @@ def main(cfg, gpu, save_dir: Path):
     loss_fn = get_loss(loss_cfg['NAME'])
     print('loss func: '+ str(loss_fn))
     optimizer = get_optimizer(model, optim_cfg['NAME'], lr, optim_cfg['WEIGHT_DECAY'])
-    scheduler = get_scheduler(sched_cfg['NAME'], optimizer, epochs * iters_per_epoch, sched_cfg['POWER'], iters_per_epoch * sched_cfg['WARMUP'], sched_cfg['WARMUP_RATIO'])
+    sched_extra = {k.lower(): v for k, v in sched_cfg.items() if k not in ('NAME', 'POWER', 'WARMUP', 'WARMUP_RATIO')}
+    scheduler = get_scheduler(sched_cfg['NAME'], optimizer, epochs * iters_per_epoch, sched_cfg['POWER'], iters_per_epoch * sched_cfg['WARMUP'], sched_cfg['WARMUP_RATIO'], **sched_extra)
     scaler = GradScaler(enabled=train_cfg['AMP'])
     writer = SummaryWriter(str(save_dir / 'logs'))
 

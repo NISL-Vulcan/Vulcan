@@ -1,0 +1,57 @@
+DEVICE: cpu
+SAVE_DIR: outputs/coca_demo
+
+MODEL:
+  NAME: DeepWuKong
+  BACKBONE: ""
+  PARAMS: {}
+  PRETRAINED: ""
+
+DATASET:
+  NAME: CocaJSONL
+  ROOT: tests/fixtures/coca_demo_converted
+  dataloader: coca
+  PARAMS:
+    args:
+      train_data_file: tests/fixtures/coca_demo_converted/train.jsonl
+      eval_data_file: tests/fixtures/coca_demo_converted/val.jsonl
+      test_data_file: tests/fixtures/coca_demo_converted/test.jsonl
+  PREPROCESS:
+    ENABLE: false
+    COMPOSE: []
+
+TRAIN:
+  INPUT_SIZE: 1
+  BATCH_SIZE: 2
+  EPOCHS: 1
+  EVAL_INTERVAL: 1
+  AMP: false
+  DDP: false
+
+EVAL:
+  INPUT_SIZE: 1
+  MODEL_PATH: ""
+
+LOSS:
+  NAME: CrossEntropy
+
+OPTIMIZER:
+  NAME: adam
+  LR: 0.001
+  WEIGHT_DECAY: 0.0
+
+SCHEDULER:
+  NAME: polynomial
+  POWER: 0.9
+  WARMUP: 0
+  WARMUP_RATIO: 0.1
+
+EXPLAIN:
+  METHOD: CocaDualView
+  ENABLE: true
+  SCORE_MODE: keyword
+  THRESHOLD: 0.45
+  TOPK: 2
+  MAX_UNITS: 32
+  CKPT_PATH: ""
+  OUTPUT_PATH: outputs/coca_demo/explain_val_keyword.json

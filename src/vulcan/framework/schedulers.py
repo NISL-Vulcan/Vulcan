@@ -86,15 +86,19 @@ class WarmupCosineLR(WarmupLR):
 
 
 
-__all__ = ['polylr', 'warmuppolylr', 'warmupcosinelr', 'warmupsteplr']
+__all__ = ['polylr', 'warmuppolylr', 'warmupcosinelr', 'warmupsteplr', 'steplr']
 
 
-def get_scheduler(scheduler_name: str, optimizer, max_iter: int, power: int, warmup_iter: int, warmup_ratio: float):
+def get_scheduler(scheduler_name: str, optimizer, max_iter: int, power: int, warmup_iter: int, warmup_ratio: float, **kwargs):
     assert scheduler_name in __all__, f"Unavailable scheduler name >> {scheduler_name}.\nAvailable schedulers: {__all__}"
     if scheduler_name == 'warmuppolylr':
         return WarmupPolyLR(optimizer, power, max_iter, warmup_iter, warmup_ratio, warmup='linear')
     elif scheduler_name == 'warmupcosinelr':
         return WarmupCosineLR(optimizer, max_iter, warmup_iter=warmup_iter, warmup_ratio=warmup_ratio)
+    elif scheduler_name == 'steplr':
+        step_size = kwargs.get('step_size', 10)
+        gamma = kwargs.get('gamma', 0.8)
+        return torch.optim.lr_scheduler.StepLR(optimizer, step_size=step_size, gamma=gamma)
     return PolyLR(optimizer, max_iter)
 
 

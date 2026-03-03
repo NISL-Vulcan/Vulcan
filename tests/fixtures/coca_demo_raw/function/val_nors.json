@@ -1,0 +1,16 @@
+[
+  {
+    "id": "func-val-n-1",
+    "target": 0,
+    "func": "int checked_read(char *dst, size_t len) {\n  if (len < 16) return -1;\n  fgets(dst, len, stdin);\n  return 0;\n}",
+    "cfgEdges": [
+      "[0,1]",
+      "[1,2]",
+      "[2,3]"
+    ],
+    "ddgEdges": [
+      "[1,2]"
+    ],
+    "nodes": []
+  }
+]
