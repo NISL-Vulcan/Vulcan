@@ -1,0 +1,24 @@
+{
+  "input_dir": "tests/fixtures/coca_demo_raw",
+  "output_dir": "tests/fixtures/coca_demo_converted",
+  "detector_hint": "demo",
+  "include_raw": false,
+  "splits": {
+    "train": {
+      "total": 2,
+      "positive": 1,
+      "negative": 1
+    },
+    "val": {
+      "total": 2,
+      "positive": 1,
+      "negative": 1
+    },
+    "test": {
+      "total": 2,
+      "positive": 1,
+      "negative": 1
+    }
+  },
+  "schema_version": "coca-vulcan-jsonl-v1"
+}

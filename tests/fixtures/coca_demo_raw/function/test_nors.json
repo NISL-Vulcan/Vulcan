@@ -1,0 +1,13 @@
+[
+  {
+    "id": "func-test-n-1",
+    "target": 0,
+    "func": "int open_safe(const char *path) {\n  if (path == NULL) return -1;\n  return 0;\n}",
+    "cfgEdges": [
+      "[0,1]",
+      "[1,2]"
+    ],
+    "ddgEdges": [],
+    "nodes": []
+  }
+]

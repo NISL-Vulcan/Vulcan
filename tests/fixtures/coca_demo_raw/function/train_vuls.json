@@ -1,0 +1,16 @@
+[
+  {
+    "id": "func-train-v-1",
+    "target": 1,
+    "func": "char *copy_user(char *input) {\n  char buf[8];\n  strcpy(buf, input);\n  return buf;\n}",
+    "cfgEdges": [
+      "[0,1]",
+      "[1,2]",
+      "[2,3]"
+    ],
+    "ddgEdges": [
+      "[0,2]"
+    ],
+    "nodes": []
+  }
+]
