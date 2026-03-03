@@ -2,6 +2,7 @@
 Lazily import dataset modules on demand to avoid loading heavy optional dependencies
 (e.g., scipy and transformers) during package import.
 """
+# pylint: disable=undefined-all-variable
 
 from __future__ import annotations
 
@@ -17,6 +18,7 @@ __all__ = [
     "VDdata",
     "vdet_data",
     "TrVDDataset",
+    "CocaJSONL",
 ]
 
 
@@ -30,6 +32,7 @@ _DATASET_ATTRS = {
     "VDdata": ("vulcan.framework.datasets.vddata", "VDdata"),
     "vdet_data": ("vulcan.framework.datasets.vdet_data", "vdet_data"),
     "TrVDDataset": ("vulcan.framework.datasets.trvd_dataset", "TrVDDataset"),
+    "CocaJSONL": ("vulcan.framework.datasets.coca_jsonl", "CocaJSONL"),
 }
 
 

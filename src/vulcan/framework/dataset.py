@@ -1,12 +1,8 @@
 import torch
-from torch import nn
-from torch.nn.parallel import DistributedDataParallel as DDP
-from torch.utils.data import DistributedSampler, RandomSampler
 from torch.utils.data import DataLoader as TorchDataLoader
-from torch import distributed as dist
 
 from importlib import import_module
-from typing import List, Dict, Tuple, Any
+from typing import Dict, Tuple, Any
 
 from vulcan.framework.preprocess import get_preprocess
 
@@ -23,6 +19,7 @@ _DATASET_LOADERS: Dict[str, Tuple[str, str]] = {
     # Sequence/vector datasets
     "VDdata": ("vulcan.framework.datasets.vddata", "VDdata"),
     "test_source": ("vulcan.framework.datasets.test_source", "test_source"),
+    "CocaJSONL": ("vulcan.framework.datasets.coca_jsonl", "CocaJSONL"),
     # AST decomposition datasets
     "TrVD": ("vulcan.framework.datasets.trvd_dataset", "TrVDDataset"),
 }
@@ -65,22 +62,6 @@ def get_dataset(config: Dict[str, Any], split: str):
         **dataset_param,
     )
     return dataset
-'''
-from vulcan.framework.datasets.XFGDataset_build import XFGSample,XFGBatch
-def graph_collate_fn(samples: List[XFGSample]) -> XFGBatch:
-    
-    """
-    Collate function for DataLoader.
-    Args:
-        samples (List[XFGSample]): List of XFGSamples
-    Returns:
-        XFGBatch: An object representing a batch of graphs and labels.
-    """
-    data = XFGBatch(XFGs=samples)
-    return data.graphs, data.labels#XFGBatch(XFGs=samples)
-
-
-'''
 def graph_collate_fn(batch):
     try:
         from torch_geometric.data import Data
@@ -100,7 +81,7 @@ def graph_collate_fn(batch):
         input_xs = [item[0] for item in batch]
         labels = [item[1] for item in batch]
         #print(labels,type(labels))
-    except:
+    except Exception:
         print('Error in graph_collate_fn')
         for item in batch:
             print(item)
@@ -144,6 +125,13 @@ def trvd_collate_fn(batch):
     return inputs, labels
 
 
+def coca_collate_fn(batch):
+    """Collate function for CocaJSONL records."""
+    inputs = [item[0] for item in batch]
+    labels = torch.stack([item[1] for item in batch], dim=0)
+    return inputs, labels
+
+
 def get_dataloader(config, split, dataset, batch_size, num_workers=1, **kw):
     if 'dataloader' in config and config['dataloader'] == 'geometric':
         if split == 'train':
@@ -154,6 +142,11 @@ def get_dataloader(config, split, dataset, batch_size, num_workers=1, **kw):
         if split == 'train':
             return TorchDataLoader(dataset, collate_fn=trvd_collate_fn, batch_size=batch_size, num_workers=num_workers, drop_last=True, pin_memory=False, sampler=kw['sampler'])
         return TorchDataLoader(dataset, collate_fn=trvd_collate_fn, batch_size=1, num_workers=1, pin_memory=True)
+
+    if 'dataloader' in config and config['dataloader'] == 'coca':
+        if split == 'train':
+            return TorchDataLoader(dataset, collate_fn=coca_collate_fn, batch_size=batch_size, num_workers=num_workers, drop_last=True, pin_memory=False, sampler=kw['sampler'])
+        return TorchDataLoader(dataset, collate_fn=coca_collate_fn, batch_size=1, num_workers=1, pin_memory=True)
 
     #sequence dataset
     if split == 'train':
