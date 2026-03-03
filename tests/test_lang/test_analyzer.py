@@ -238,7 +238,7 @@ def test_java_analyzer_methods_with_stubs(monkeypatch, tmp_path):
     monkeypatch.setitem(sys.modules, "program_graphs.cfg", cfg_mod)
     monkeypatch.setitem(sys.modules, "program_graphs.adg", adg_mod)
 
-    # java_impl uses an absolute import of CodeAnalysis.interfaces.base
+    # java_impl uses an absolute import for CodeAnalysis.interfaces.base
     base_mod = importlib.import_module("vulcan.lang.CodeAnalysis.interfaces.base")
     monkeypatch.setitem(sys.modules, "CodeAnalysis.interfaces.base", base_mod)
 

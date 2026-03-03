@@ -51,18 +51,18 @@ def test_clean_gadget_renames_variables_and_skips_main_args():
     code = [
         "int a = 0;",
         "a = a + b;",
-        "argc = a;",  # main argument name should be preserved
+        "argc = a;",  # main argument names should be preserved
     ]
     out = clean_gadget(code)
     text = " ".join(out)
     # User variables should be replaced with VAR*
     assert "VAR" in text
-    # main argument name should not be replaced
+    # main argument names should not be replaced
     assert "argc" in text
 
 
 def test_clean_gadget_strips_non_ascii():
-    code = ['int x = 1;  // Comment contains non-ASCII characters']
+    code = ['int x = 1;  // comment contains non-ASCII: éé']
     out = clean_gadget(code)
     # All non-ASCII characters should be removed
     assert all(ord(ch) < 128 for ch in out[0])

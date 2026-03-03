@@ -387,29 +387,29 @@ def test_syntax_seq_visitors_and_builder(monkeypatch):
 
     tokens = [raw_var, kw_for, fn_token, int_token, float_token, other]
 
-    # SyntaxSeqVisitor: collect token names
+    # SyntaxSeqVisitor: collect name
     seq_vis = syn_mod.SyntaxSeqVisitor()
     for t in tokens:
         seq_vis.visit(t)
     assert seq_vis.S == [t.name for t in tokens]
 
-    # SyntaxTokenkindVisitor: collect token kinds
+    # SyntaxTokenkindVisitor: collect kind
     kind_vis = syn_mod.SyntaxTokenkindVisitor()
     for t in tokens:
         kind_vis.visit(t)
     assert kind_vis.S == [t.kind for t in tokens]
 
-    # SyntaxTokenkindVariableVisitor: cover all conditional branches
+    # SyntaxTokenkindVariableVisitor: exercise all conditional branches
     var_vis = syn_mod.SyntaxTokenkindVariableVisitor()
     for t in tokens:
         var_vis.visit(t)
     assert var_vis.S == [
-        "var_x",       # raw_identifier and contains 'var'
+        "var_x",       # raw_identifier containing "var"
         "for",         # whitelisted keyword
-        "fn_0",        # function name alias
+        "fn_0",        # aliased function name
         "int64_t",     # int* prefix
         "float32_t",   # float* prefix
-        "identifier",  # otherwise fall back to token kind
+        "identifier",  # others fall back to kind
     ]
 
     # Builder + Representation: use SyntaxTokenkindVariableVisitor to aggregate token frequencies
@@ -541,17 +541,17 @@ def test_common_graph_map_to_leaves_basic_mapping():
     from vulcan.framework.representations import common as common_mod
 
     G = nx.MultiDiGraph()
-    # Inner AST node and two leaf tokens
+    # inner AST node and two leaf tokens
     inner = "inner"
     leaf0 = "leaf0"
     leaf1 = "leaf1"
     G.add_node(inner, attr="inner")
     G.add_node(leaf0, attr="tok0", seq_order=0)
     G.add_node(leaf1, attr="tok1", seq_order=1)
-    # AST edges: inner -> leaf0/leaf1
+    # ast: inner -> leaf0/leaf1
     G.add_edge(inner, leaf0, attr="ast")
     G.add_edge(inner, leaf1, attr="ast")
-    # Data edge: inner points to a data node
+    # data edge: inner points to a data node
     data_node = "data"
     G.add_node(data_node, attr="data")
     G.add_edge(inner, data_node, attr="data")
@@ -559,7 +559,7 @@ def test_common_graph_map_to_leaves_basic_mapping():
     graph = common_mod.Graph(G, node_types=["inner", "tok0", "tok1", "data"], edge_types=["ast", "data"])
     mapped = graph.map_to_leaves()
 
-    # Leaf nodes should be sorted and preserved according to seq_order
+    # Leaf nodes should be sorted and kept by seq_order
     leaves_indices = mapped.get_leaf_node_list()
     assert leaves_indices == sorted(leaves_indices)
 
@@ -576,7 +576,7 @@ def test_common_graph_map_to_leaves_custom_relations_and_idempotent():
     G.add_node(mid, attr="mid")
     G.add_node(leaf, attr="leaf", seq_order=5)
 
-    # Custom parent/child relation connected via custom attr values
+    # Custom parent/child relations connected via custom attr values
     G.add_edge(root, mid, attr="P")   # parent relation
     G.add_edge(mid, leaf, attr="C")   # child relation
 
@@ -585,5 +585,5 @@ def test_common_graph_map_to_leaves_custom_relations_and_idempotent():
     mapped1 = graph.map_to_leaves(relations)
     mapped2 = mapped1.map_to_leaves(relations)
 
-    # Both root and mid should be folded onto leaf (idempotent: the second mapping should not change the structure)
+    # root and mid should both be collapsed onto leaf (idempotent: the second mapping does not change the structure)
     assert mapped1.get_node_str_list() == mapped2.get_node_str_list()

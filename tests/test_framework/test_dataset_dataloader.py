@@ -1,8 +1,11 @@
 """Unit tests for vulcan.framework.dataset.get_dataloader."""
+import sys
+import types
+
 import torch
 from torch.utils.data import Dataset, RandomSampler
 
-from vulcan.framework.dataset import get_dataloader
+from vulcan.framework.dataset import get_dataloader, graph_collate_fn
 
 
 class _MinimalDataset(Dataset):
@@ -52,3 +55,25 @@ def test_get_dataloader_geometric_val(monkeypatch):
     dl = get_dataloader(cfg, "val", ds, batch_size=1, num_workers=0)
     batch = next(iter(dl))
     assert batch == ("graph", "labels")
+
+
+def test_graph_collate_fn_builds_data_list_and_labels(monkeypatch):
+    class _FakeData:
+        def __init__(self, **kwargs):
+            self.kwargs = kwargs
+            self.edge_index = kwargs.get("edge_index")
+            self.my_data = kwargs.get("my_data")
+
+    fake_tg_data = types.SimpleNamespace(Data=_FakeData)
+    monkeypatch.setitem(sys.modules, "torch_geometric", types.SimpleNamespace(data=fake_tg_data))
+    monkeypatch.setitem(sys.modules, "torch_geometric.data", fake_tg_data)
+
+    edge_index = ("unused", torch.tensor([[0, 1], [1, 0]], dtype=torch.long))
+    batch = [
+        ((edge_index, "payload-a"), torch.tensor(1, dtype=torch.long)),
+        ((edge_index, "payload-b"), torch.tensor(0, dtype=torch.long)),
+    ]
+    data_list, labels = graph_collate_fn(batch)
+    assert len(data_list) == 2
+    assert isinstance(data_list[0], _FakeData)
+    assert tuple(labels.shape) == (2,)

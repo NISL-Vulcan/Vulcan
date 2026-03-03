@@ -110,7 +110,7 @@ def test_dataset_optimization_api_status_and_logs(monkeypatch):
 
     assert status["success"] is True
     assert status["status"] == "completed"
-    assert ("best ratio" in status["status_description"]) or ("EN" in status["status_description"])
+    assert "best ratio" in status["status_description"]
     assert logs["success"] is True
     assert logs["log_count"] == 2
 
@@ -334,7 +334,7 @@ def test_resource_updater_update_resources_deduplicate(monkeypatch):
     )
 
     updater.update_resources()
-    # Two queries each have one unique title plus one duplicate, for 3 unique entries
+    # Two queries each have one unique title plus one shared title, yielding 3 unique entries in total
     assert len(extracted) == 3
 
 
@@ -474,7 +474,7 @@ def test_dataset_optimization_api_run_dataset_optimization_success(monkeypatch, 
     opt_api.run_dataset_optimization(job)
     assert job.status == "completed"
     assert job.progress == 100
-    # Metrics should contain key fields
+    # metrics 中应包含关键字段
     assert "best_ratio" in job.metrics
     assert "best_f1_score" in job.metrics
     assert "total_iterations" in job.metrics

@@ -31,21 +31,21 @@ def test_xfg_vocabulary_build_from_w2v_and_convert(tmp_path, monkeypatch):
         def load(path, mmap="r"):
             return _FakeKeyedVectors()
 
-    # Stub exists and KeyedVectors.load
+    # stub exists and KeyedVectors.load
     w2v_path = tmp_path / "dummy.wv"
     w2v_path.write_bytes(b"stub")
     monkeypatch.setattr(xfg_vocab_mod, "exists", lambda p: True)
     monkeypatch.setattr(xfg_vocab_mod, "KeyedVectors", _FakeKeyedVectors)
 
     vocab = xfg_vocab_mod.Vocabulary.build_from_w2v(str(w2v_path))
-    # Special tokens should come first
+    # special tokens come first
     assert vocab.convert_token_to_id(xfg_vocab_mod.PAD) == 0
     assert vocab.convert_token_to_id(xfg_vocab_mod.UNK) == 1
     assert vocab.convert_token_to_id(xfg_vocab_mod.MASK) == 2
-    # Word2Vec tokens should follow
+    # word2vec tokens come later
     ids = vocab.convert_tokens_to_ids(["foo", "bar", "baz"])
     assert ids[0] != ids[1]
-    # Unknown tokens should map to UNK
+    # unknown token goes to UNK
     assert ids[2] == vocab.convert_token_to_id(xfg_vocab_mod.UNK)
     assert vocab.get_pad_id() == vocab.convert_token_to_id(xfg_vocab_mod.PAD)
 

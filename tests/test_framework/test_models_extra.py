@@ -569,6 +569,40 @@ def test_devign_origin_forward_with_mocks(monkeypatch):
     _run_devign_forward_with_mocks(devign_origin_mod, monkeypatch, graph_format="bi")
 
 
+def test_devign_origin_model_wrapper_and_prediction_head():
+    devign_origin_mod = importlib.import_module("vulcan.framework.models.Devign_origin")
+
+    class _DummyEncoder(torch.nn.Module):
+        def forward(self, input_ids, attention_mask=None):
+            bs = input_ids.shape[0]
+            # match caller expectation: encoder(...) returns tuple and we take [0]
+            return (torch.full((bs, 2), 0.25),)
+
+    wrapper = devign_origin_mod.Model(encoder=_DummyEncoder(), config=None, tokenizer=None, args={})
+    x = torch.tensor([[2, 3], [4, 1]], dtype=torch.long)
+    prob = wrapper(x)
+    assert prob.shape == (2, 2)
+    loss, prob2 = wrapper(x, labels=torch.tensor([0.0, 1.0]))
+    assert torch.is_tensor(loss)
+    assert prob2.shape == (2, 2)
+
+    class _Args:
+        hidden_size = 4
+        num_classes = 2
+
+    class _Cfg:
+        hidden_dropout_prob = 0.0
+
+    # cover default input_size path + explicit input_size path
+    head_default = devign_origin_mod.PredictionClassification(config=_Cfg(), args=_Args())
+    out = head_default(torch.randn(3, 4))
+    assert out.shape == (3, 2)
+
+    head_custom = devign_origin_mod.PredictionClassification(config=_Cfg(), args=_Args(), input_size=6)
+    out2 = head_custom(torch.randn(3, 6))
+    assert out2.shape == (3, 2)
+
+
 def test_gnnregvd_model_and_prediction_head():
     gnnregvd_mod = importlib.import_module("vulcan.framework.models.GNNReGVD")
 
